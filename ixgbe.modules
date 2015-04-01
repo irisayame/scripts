@@ -1,0 +1,11 @@
+#!/bin/sh
+
+
+modinfo -F filename ixgbe >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    modprobe -b igb >/dev/null 2>&1
+    ifup eth5
+    exit 0
+fi
+
+exit 1

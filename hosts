@@ -1,0 +1,15 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+192.168.16.12 r16s12
+192.168.16.11 r16s11
+192.168.16.10 r16s10
+192.168.16.9 r16s09
+192.168.16.4 r16s04
+192.168.16.3 r16s03
+192.168.16.2 r16s02
+192.168.16.1 r16s01
+172.16.2.12 hadoop12
+172.16.2.11 hadoop11
+172.16.2.10 hadoop10
+172.16.2.9 hadoop09
