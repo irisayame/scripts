@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 SEP=","
 MEMSIZE = 135221465088.00
@@ -21,6 +22,11 @@ class HadoopTest(object):
         self.summaryFile = "summary-%s.csv"%(name,)
         self.hosts = hosts
 
+    def parseLog(self):
+        logfile = LogFile(PATH_PREFIX+self.name+"/run.log")
+        logfile.parse()
+        
+
     def readDstats(self):
         hostNumber = len(hosts)
         for index, host in enumerate(hosts):
@@ -32,15 +38,15 @@ class HadoopTest(object):
     def mergeDstats(self):
         with file(self.summaryFile, "wb") as fobj:            
             datatitle = ",".join(ROW_TITLE)
-            titlerow = "TIME"
+            titlerow = "TIMESTAMP,,,"
             hostrow = ""
             for host in self.hosts:
                 titlerow += ",,"+datatitle
                 hostrow += ",,"+",".join([host]*(NET_SEND+1))
-            fobj.write( hostrow + "\n")
+            fobj.write( ",,,"+hostrow + "\n")
             fobj.write( titlerow + "\n")
             for timestamp, hostArray in self.dstatMatrix.items():
-                row = "%s"%timestamp
+                row = "%s,,,"%timestamp
                 for hostDstat in hostArray:
                     if hostDstat is None:
                         row += ",,"+",".join(["-1"]*(NET_SEND+1))
@@ -49,15 +55,27 @@ class HadoopTest(object):
                 fobj.write(row+"\n")
         
         
+class LogFile(object):
+    def __init__(self, filepath):
+        self.logpath = filepath
+        self.pattern = "map [0-9]+% reduce [0-9]+%$"
 
+    def parse(self):
+        with file(self.logpath,"rb")as fobj:
+           lines = fobj.readlines()
+           for line in lines:
+               match = re.search(self.pattern, line)
+               if match:
+                   info = line.strip().split(" ")
+                   #print [info[1]]+info[5:]
 
 class DstatFile(object):
     def __init__(self, filepath, dstatMatrix, hostNumber, hostIndex):
-         self.filepath = filepath
-         #self.timelines = []
-         self.globalDict = dstatMatrix
-         self.hostNumber = hostNumber
-         self.hostIndex = hostIndex
+        self.filepath = filepath
+        #self.timelines = []
+        self.globalDict = dstatMatrix
+        self.hostNumber = hostNumber
+        self.hostIndex = hostIndex
 
          
     def readlines(self):
@@ -71,7 +89,7 @@ class DstatFile(object):
                     continue
                 datalist = self.parseline(map(float,numbers[1:]))
                 #self.timelines.append([numbers[0]]+ datalist)
-                timestamp = numbers[0]
+                timestamp = numbers[0].split(" ")[1]
                 if timestamp not in self.globalDict:
                     self.globalDict[timestamp] = [None]*self.hostNumber
                 self.globalDict[timestamp][self.hostIndex] = datalist    
@@ -93,6 +111,7 @@ if __name__ == "__main__":
     TESTNAME = "sort_xinni_201504091654_120G-128Mblocksize-60Reduce"
     hosts = ["r16s09","r16s10", "r16s11", "r16s12"]
     test = HadoopTest(TESTNAME, hosts)
+    test.parseLog()
     test.readDstats()
     test.mergeDstats()
 
