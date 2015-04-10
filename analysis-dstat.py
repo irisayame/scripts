@@ -21,10 +21,14 @@ class HadoopTest(object):
         self.dstatMatrix = {}
         self.summaryFile = "summary-%s.csv"%(name,)
         self.hosts = hosts
+        self.progArray = None
 
     def parseLog(self):
         logfile = LogFile(PATH_PREFIX+self.name+"/run.log")
-        logfile.parse()
+        self.progArray = logfile.parse()
+        for timeArray in self.progArray:
+             if self.dstatMatrix.get(timeArray[0]):
+                  self.dstatMatrix[timeArray[0]][len(self.hosts)] = timeArray[1:]
         
 
     def readDstats(self):
@@ -36,23 +40,51 @@ class HadoopTest(object):
             #self.dstatFiles.append(dsfile)
 
     def mergeDstats(self):
+        self.readDstats()
+        self.parseLog()
         with file(self.summaryFile, "wb") as fobj:            
-            datatitle = ",".join(ROW_TITLE)
-            titlerow = "TIMESTAMP,,,"
+            titlerow = "TIMESTAMP,Map Progress,Reduce Progress,"
             hostrow = ""
-            for host in self.hosts:
-                titlerow += ",,"+datatitle
-                hostrow += ",,"+",".join([host]*(NET_SEND+1))
+            for dt in ROW_TITLE:
+                titlerow += ","
+                hostrow += ","
+                for host in self.hosts:
+                    titlerow += dt+","
+                    hostrow += host+","
             fobj.write( ",,,"+hostrow + "\n")
             fobj.write( titlerow + "\n")
             for timestamp, hostArray in self.dstatMatrix.items():
-                row = "%s,,,"%timestamp
-                for hostDstat in hostArray:
-                    if hostDstat is None:
-                        row += ",,"+",".join(["-1"]*(NET_SEND+1))
-                    else:
-                        row += ",,"+",".join(map(str,hostDstat))
+                mapprog,reduceprog="",""
+                if hostArray[len(self.hosts)] is not None:
+                    [mapprog,reduceprog] = hostArray[len(self.hosts)]
+                row = "%s,%s,%s"%(timestamp,mapprog,reduceprog)
+                for idata in range(len(ROW_TITLE)):
+                    row += ","
+                    for ihost in range(len(self.hosts)):
+                        if hostArray[ihost] is None:
+                             row += ",-1"
+                        else:
+                             row += ","+str(hostArray[ihost][idata])
                 fobj.write(row+"\n")
+                    
+    #def mergeDstats2(self):
+    #    with file(self.summaryFile, "wb") as fobj:            
+    #        datatitle = ",".join(ROW_TITLE)
+    #        titlerow = "TIMESTAMP,,,"
+    #        hostrow = ""
+    #        for host in self.hosts:
+    #            titlerow += ",,"+datatitle
+    #            hostrow += ",,"+",".join([host]*(NET_SEND+1))
+    #        fobj.write( ",,,"+hostrow + "\n")
+    #        fobj.write( titlerow + "\n")
+    #        for timestamp, hostArray in self.dstatMatrix.items():
+    #            row = "%s,,,"%timestamp
+    #            for hostDstat in hostArray:
+    #                if hostDstat is None:
+    #                    row += ",,"+",".join(["-1"]*(NET_SEND+1))
+    #                else:
+    #                    row += ",,"+",".join(map(str,hostDstat))
+    #            fobj.write(row+"\n")
         
         
 class LogFile(object):
@@ -61,13 +93,15 @@ class LogFile(object):
         self.pattern = "map [0-9]+% reduce [0-9]+%$"
 
     def parse(self):
+        progArray = []
         with file(self.logpath,"rb")as fobj:
            lines = fobj.readlines()
            for line in lines:
                match = re.search(self.pattern, line)
                if match:
                    info = line.strip().split(" ")
-                   #print [info[1]]+info[5:]
+                   progArray.append([info[1]]+[info[6]]+[info[8]])
+        return progArray
 
 class DstatFile(object):
     def __init__(self, filepath, dstatMatrix, hostNumber, hostIndex):
@@ -91,7 +125,7 @@ class DstatFile(object):
                 #self.timelines.append([numbers[0]]+ datalist)
                 timestamp = numbers[0].split(" ")[1]
                 if timestamp not in self.globalDict:
-                    self.globalDict[timestamp] = [None]*self.hostNumber
+                    self.globalDict[timestamp] = [None]*(self.hostNumber+1)
                 self.globalDict[timestamp][self.hostIndex] = datalist    
 
 
@@ -111,8 +145,6 @@ if __name__ == "__main__":
     TESTNAME = "sort_xinni_201504091654_120G-128Mblocksize-60Reduce"
     hosts = ["r16s09","r16s10", "r16s11", "r16s12"]
     test = HadoopTest(TESTNAME, hosts)
-    test.parseLog()
-    test.readDstats()
     test.mergeDstats()
 
 
