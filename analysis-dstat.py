@@ -2,26 +2,62 @@ import os
 import sys
 
 SEP=","
-hosts = ["r16s09","r16s10", "r16s11", "r16s12"]
-timeline = {}
-MEMSIZE = 137438953472
+MEMSIZE = 135221465088.00
+PATH_PREFIX = "../userlogs/" 
 
-[CPU_USR,CPU_SYS,CPU_IDLE,CPU_BUSY]=[0,1,2,3]
-[MEM_USED,MEM_CACHE,MEM_FREE,MEM_BUSY]=[4,5,6,7]
-[DISK_READ,DISK_WRITE,NET_RECV,NET_SEND]=[8,9,10,11]
+ROW_TITLE = ["CPU_USR","CPU_SYS","CPU_IDLE",
+    "CPU_BUSY","MEM_USED","MEM_CACHE","MEM_FREE","MEM_BUSY",
+    "DISK_READ","DISK_WRTIE","NET_RECV","NET_SEND"]
+[CPU_USR,CPU_SYS,CPU_IDLE,CPU_BUSY] = [0,1,2,3]
+[MEM_USED,MEM_CACHE,MEM_FREE,MEM_BUSY] = [4,5,6,7]
+[DISK_READ,DISK_WRITE,NET_RECV,NET_SEND] = [8,9,10,11]
 
-#class Line(object):
-#    def __init__(self, cpu, disk, net, mem):
-#        print cpu, disk, net, mem
-#        self.cpu = {"usr": cpu[0], "idle": cpu[2], "sys": cpu[1], "busy":100-cpu[2]}
-#        self.mem = {"used": mem[0], "cache": mem[2], "free": mem[3], "busy": MEMSIZE-mem[3]}
-#        self.disk = {"read": disk[0], "write": disk[1]}
-#        self.net = {"recv":net[0] , "send": net[1]}
+class HadoopTest(object):
+    def __init__(self, name, hosts):
+        self.name = name
+        self.description = name
+        #self.dstatFiles = []
+        self.dstatMatrix = {}
+        self.summaryFile = "summary-%s.csv"%(name,)
+        self.hosts = hosts
+
+    def readDstats(self):
+        hostNumber = len(hosts)
+        for index, host in enumerate(hosts):
+            FILEPATH = "%s%s/%s-%s.csv"%(PATH_PREFIX,self.name,host,self.name)
+            dsfile = DstatFile(FILEPATH, self.dstatMatrix, hostNumber, index)
+            dsfile.readlines()
+            #self.dstatFiles.append(dsfile)
+
+    def mergeDstats(self):
+        with file(self.summaryFile, "wb") as fobj:            
+            datatitle = ",".join(ROW_TITLE)
+            titlerow = "TIME"
+            hostrow = ""
+            for host in self.hosts:
+                titlerow += ",,"+datatitle
+                hostrow += ",,"+",".join([host]*(NET_SEND+1))
+            fobj.write( hostrow + "\n")
+            fobj.write( titlerow + "\n")
+            for timestamp, hostArray in self.dstatMatrix.items():
+                row = "%s"%timestamp
+                for hostDstat in hostArray:
+                    if hostDstat is None:
+                        row += ",,"+",".join(["-1"]*(NET_SEND+1))
+                    else:
+                        row += ",,"+",".join(map(str,hostDstat))
+                fobj.write(row+"\n")
+        
+        
+
 
 class DstatFile(object):
-    def __init__(self, filepath):
+    def __init__(self, filepath, dstatMatrix, hostNumber, hostIndex):
          self.filepath = filepath
-         self.datadict = {}
+         #self.timelines = []
+         self.globalDict = dstatMatrix
+         self.hostNumber = hostNumber
+         self.hostIndex = hostIndex
 
          
     def readlines(self):
@@ -30,32 +66,37 @@ class DstatFile(object):
             lines = fobj.readlines()
             for line in lines:
                 numbers = line.split(SEP)
-                lnumber += 1
-                if lnumber == 7:
-                    print line
+                lnumber += 1 
                 if lnumber < 8:
                     continue
-                print numbers[1:]
-                print self.parseline(map(float,numbers[1:]))
-                break
+                datalist = self.parseline(map(float,numbers[1:]))
+                #self.timelines.append([numbers[0]]+ datalist)
+                timestamp = numbers[0]
+                if timestamp not in self.globalDict:
+                    self.globalDict[timestamp] = [None]*self.hostNumber
+                self.globalDict[timestamp][self.hostIndex] = datalist    
+
 
     def parseline(self, numbers):
-        print numbers
         dstatLine = [-1]*(NET_SEND+1)
         dstatLine[CPU_USR:CPU_BUSY] = numbers[0:3]
         dstatLine[CPU_BUSY] = 100-dstatLine[CPU_IDLE]
-        dstatLine[DISK_READ:DISK_WRITE] = numbers[6:8]
-        dstatLine[NET_RECV:] = numbers[8:10]
         dstatLine[MEM_USED] = numbers[14]
-        dstatLine[MEM_CACHE:DISK_READ] = numbers[16:]
-        dstatLine[MEM_BUSY] = 100-dstatLine[MEM_FREE]
+        dstatLine[MEM_CACHE:MEM_BUSY] = numbers[16:]
+        dstatLine[MEM_BUSY] = MEMSIZE-dstatLine[MEM_FREE]
+        dstatLine[DISK_READ:NET_RECV] = numbers[6:8]
+        dstatLine[NET_RECV:] = numbers[8:10]
         return dstatLine
- 
-        
 
 
 if __name__ == "__main__":
-    FILEPATH = "userlogs/1428029442/r16s09-dstat-1428029442.csv" 
-    dsfile = DstatFile(FILEPATH)
-    dsfile.readlines()
+    TESTNAME = "sort_xinni_201504091654_120G-128Mblocksize-60Reduce"
+    hosts = ["r16s09","r16s10", "r16s11", "r16s12"]
+    test = HadoopTest(TESTNAME, hosts)
+    test.readDstats()
+    test.mergeDstats()
+
+
+
+
 
