@@ -19,7 +19,7 @@ class HadoopTest(object):
         self.description = name
         #self.dstatFiles = []
         self.dstatMatrix = {}
-        self.summaryFile = "summary-%s.csv"%(name,)
+        self.summaryFile = "%s%s/summary-%s.csv"%(PATH_PREFIX,name,name)
         self.hosts = hosts
         self.progArray = None
 
