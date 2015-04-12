@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+from datetime import datetime
 
 SEP=","
 MEMSIZE = 135221465088.00
@@ -13,6 +14,10 @@ ROW_TITLE = ["CPU_USR","CPU_SYS","CPU_IDLE",
 [MEM_USED,MEM_CACHE,MEM_FREE,MEM_BUSY] = [4,5,6,7]
 [DISK_READ,DISK_WRITE,NET_RECV,NET_SEND] = [8,9,10,11]
 
+def deltaTime(time1, time2):
+   time1 = datetime.strptime(time1, "%H:%M:%S")
+   return str((time1-time2).seconds) 
+
 class HadoopTest(object):
     def __init__(self, name, hosts):
         self.name = name
@@ -22,6 +27,10 @@ class HadoopTest(object):
         self.summaryFile = "%s%s/summary-%s.csv"%(PATH_PREFIX,name,name)
         self.hosts = hosts
         self.progArray = None
+        self.starttime_dict = {}
+    
+    def getTimeZero(self):
+        return datetime.strptime(min(self.starttime_dict.values()),"%H:%M:%S")
 
     def parseLog(self):
         logfile = LogFile(PATH_PREFIX+self.name+"/run.log")
@@ -37,13 +46,16 @@ class HadoopTest(object):
             FILEPATH = "%s%s/%s-%s.csv"%(PATH_PREFIX,self.name,host,self.name)
             dsfile = DstatFile(FILEPATH, self.dstatMatrix, hostNumber, index)
             dsfile.readlines()
+            self.starttimes = []
+            self.starttime_dict[host] = dsfile.starttime
             #self.dstatFiles.append(dsfile)
 
     def mergeDstats(self):
         self.readDstats()
         self.parseLog()
+        timezero = self.getTimeZero()
         with file(self.summaryFile, "wb") as fobj:            
-            titlerow = "TIMESTAMP,Map Progress,Reduce Progress,"
+            titlerow = "#TIMESTAMP,Delta Time,Map Progress,Reduce Progress,"
             hostrow = ""
             for dt in ROW_TITLE:
                 titlerow += ","
@@ -51,18 +63,19 @@ class HadoopTest(object):
                 for host in self.hosts:
                     titlerow += dt+","
                     hostrow += host+","
-            fobj.write( ",,,"+hostrow + "\n")
+            fobj.write( "#,,,,"+hostrow + "\n")
             fobj.write( titlerow + "\n")
             for timestamp, hostArray in self.dstatMatrix.items():
                 mapprog,reduceprog="",""
+                timedelta = deltaTime(timestamp,timezero)
                 if hostArray[len(self.hosts)] is not None:
                     [mapprog,reduceprog] = hostArray[len(self.hosts)]
-                row = "%s,%s,%s"%(timestamp,mapprog,reduceprog)
+                row = "%s,%s,%s,%s"%(timestamp,timedelta,mapprog,reduceprog)
                 for idata in range(len(ROW_TITLE)):
                     row += ","
                     for ihost in range(len(self.hosts)):
                         if hostArray[ihost] is None:
-                             row += ",-1"
+                             row += ","
                         else:
                              row += ","+str(hostArray[ihost][idata])
                 fobj.write(row+"\n")
@@ -110,6 +123,7 @@ class DstatFile(object):
         self.globalDict = dstatMatrix
         self.hostNumber = hostNumber
         self.hostIndex = hostIndex
+        self.starttime = -1
 
          
     def readlines(self):
@@ -124,6 +138,8 @@ class DstatFile(object):
                 datalist = self.parseline(map(float,numbers[1:]))
                 #self.timelines.append([numbers[0]]+ datalist)
                 timestamp = numbers[0].split(" ")[1]
+                if self.starttime == -1:
+                    self.starttime = timestamp
                 if timestamp not in self.globalDict:
                     self.globalDict[timestamp] = [None]*(self.hostNumber+1)
                 self.globalDict[timestamp][self.hostIndex] = datalist    
@@ -146,8 +162,4 @@ if __name__ == "__main__":
     hosts = ["r16s09","r16s10", "r16s11", "r16s12"]
     test = HadoopTest(TESTNAME, hosts)
     test.mergeDstats()
-
-
-
-
 
