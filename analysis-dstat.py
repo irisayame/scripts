@@ -65,7 +65,8 @@ class HadoopTest(object):
                     hostrow += host+","
             fobj.write( "#,,,,"+hostrow + "\n")
             fobj.write( titlerow + "\n")
-            for timestamp, hostArray in self.dstatMatrix.items():
+            for timestamp in sorted(self.dstatMatrix.iterkeys()):
+                hostArray = self.dstatMatrix.get(timestamp)
                 mapprog,reduceprog="",""
                 timedelta = deltaTime(timestamp,timezero)
                 if hostArray[len(self.hosts)] is not None:
