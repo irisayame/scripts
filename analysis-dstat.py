@@ -2,7 +2,6 @@ import os
 import sys
 import re
 from datetime import datetime
-import copy
 
 SEP=","
 MEMSIZE = 135221465088.00
@@ -18,7 +17,7 @@ ROW_TITLE = ["CPU_USR","CPU_SYS","CPU_IDLE",
 def deltaTime(time1, time2):
    time1 = datetime.strptime(time1, "%H:%M:%S")
    return str((time1-time2).seconds) 
-      
+
 class HadoopTest(object):
     def __init__(self, name, hosts):
         self.name = name
@@ -32,9 +31,6 @@ class HadoopTest(object):
     
     def getTimeZero(self):
         return datetime.strptime(min(self.starttime_dict.values()),"%H:%M:%S")
-
-    def getTimeLast(self):
-        return max(self.starttime_dict.values())
 
     def parseLog(self):
         logfile = LogFile(PATH_PREFIX+self.name+"/run.log")
@@ -54,47 +50,7 @@ class HadoopTest(object):
             self.starttime_dict[host] = dsfile.starttime
             #self.dstatFiles.append(dsfile)
 
-
-    def sampleDstats(self, rate):
-        self.readDstats()
-        timelast = self.getTimeLast()
-        splDstatMatrix = {}
-        counter = 0
-        hostNumber = len(self.hosts)
-        splHostArray = []
-        for timestamp in sorted(self.dstatMatrix.iterkeys()):
-            hostArray = self.dstatMatrix.get(timestamp)[:hostNumber]
-            if timestamp < timelast:
-                continue
-            print "counter:%d"%counter
-            if counter%rate == 0:
-                splHostArray.append(hostArray)
-                splDstatMatrix[timestamp] = []
-                aggreArray = [None]*hostNumber 
-                for ihost in range(hostNumber):
-                    aggreArray[ihost] = []  
-                    for harray in splHostArray:
-                        aggreArray[ihost].append(harray[ihost])
-                    temparray = map(sum,aggreArray[ihost])
-                    splDstatMatrix[timestamp].append(copy.copy([item/5 for item in temparray]))
-                    splHostArray = []
-            else:
-                splHostArray.append(hostArray)
-            counter += 1
-            print "splHostArray Len:%d"%len(splHostArray)
-            print 
-            if counter == 6:
-            #    for key in sorted(splDstatMatrix.iterkeys()):
-            #        print key
-            #        for v in splDstatMatrix.get(key):
-            #             print v
-            #        print
-                break
-            splDstatMatrix[timestamp] = splHostArray
-            
-            
-
-    def mergeDstats3(self):
+    def mergeDstats(self):
         self.readDstats()
         self.parseLog()
         timezero = self.getTimeZero()
@@ -206,6 +162,5 @@ if __name__ == "__main__":
     TESTNAME = "sort_xinni_201504091654_120G-128Mblocksize-60Reduce"
     hosts = ["r16s09","r16s10", "r16s11", "r16s12"]
     test = HadoopTest(TESTNAME, hosts)
-    #test.mergeDstats()
-    test.sampleDstats(3)
+    test.mergeDstats()
 
