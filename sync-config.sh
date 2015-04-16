@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-echo "usage sync-config local_file remove_file"
+echo "usage sync-config local_file remote_file"
 
 if [ "$#" != "2" ];then
 	echo "need 2 parameters"

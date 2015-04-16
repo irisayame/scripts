@@ -7,6 +7,8 @@ import copy
 SEP=","
 MEMSIZE = 135221465088.00
 PATH_PREFIX = "../userlogs/" 
+COLUMN_LENGTH=19
+
 
 ROW_TITLE = ["CPU_USR","CPU_SYS","CPU_IDLE",
     "CPU_BUSY","MEM_USED","MEM_CACHE","MEM_FREE","MEM_BUSY",
@@ -20,15 +22,22 @@ def deltaTime(time1, time2):
    return str((time1-time2).seconds) 
       
 class HadoopTest(object):
-    def __init__(self, name, hosts):
+    def __init__(self, name, hosts, samplerate, logname):
         self.name = name
         self.description = name
         #self.dstatFiles = []
         self.dstatMatrix = {}
+        self.splDstatMatrix = {}
         self.summaryFile = "%s%s/summary-%s.csv"%(PATH_PREFIX,name,name)
+        self.smplSummaryFile = "%s%s/summary-sample-%s.csv"%(PATH_PREFIX,name,name)
         self.hosts = hosts
         self.progArray = None
         self.starttime_dict = {}
+        self.sampleRate = samplerate
+        self.logname = logname
+        self.conffile = "gnu.conf"
+        self.map_start = ""
+        self.map_end = ""
     
     def getTimeZero(self):
         return datetime.strptime(min(self.starttime_dict.values()),"%H:%M:%S")
@@ -37,8 +46,10 @@ class HadoopTest(object):
         return max(self.starttime_dict.values())
 
     def parseLog(self):
-        logfile = LogFile(PATH_PREFIX+self.name+"/run.log")
+        logfile = LogFile(PATH_PREFIX+self.name+"/%s.log"%self.logname)
         self.progArray = logfile.parse()
+        self.map_start = logfile.map_start
+        self.map_end = logfile.map_end
         for timeArray in self.progArray:
              if self.dstatMatrix.get(timeArray[0]):
                   self.dstatMatrix[timeArray[0]][len(self.hosts)] = timeArray[1:]
@@ -56,48 +67,67 @@ class HadoopTest(object):
 
 
     def sampleDstats(self, rate):
-        self.readDstats()
         timelast = self.getTimeLast()
-        splDstatMatrix = {}
-        counter = 0
+        counter = 1
         hostNumber = len(self.hosts)
+        titleNumber = len(ROW_TITLE)
         splHostArray = []
         for timestamp in sorted(self.dstatMatrix.iterkeys()):
             hostArray = self.dstatMatrix.get(timestamp)[:hostNumber]
             if timestamp < timelast:
                 continue
-            print "counter:%d"%counter
             if counter%rate == 0:
                 splHostArray.append(hostArray)
-                splDstatMatrix[timestamp] = []
-                aggreArray = [None]*hostNumber 
+                self.splDstatMatrix[timestamp] = []
                 for ihost in range(hostNumber):
-                    aggreArray[ihost] = []  
-                    for harray in splHostArray:
-                        aggreArray[ihost].append(harray[ihost])
-                    temparray = map(sum,aggreArray[ihost])
-                    splDstatMatrix[timestamp].append(copy.copy([item/5 for item in temparray]))
-                    splHostArray = []
+                    titleArray = [None]*titleNumber
+                    for iTitle in range(titleNumber):
+                        titleArray[iTitle]=[]
+                        for harray in splHostArray:
+                            if harray[ihost] is None:
+                                harray[ihost] = [0]*titleNumber
+                            titleArray[iTitle].append(harray[ihost][iTitle])
+                    temparray = map(sum,titleArray)
+                    self.splDstatMatrix[timestamp].append(copy.copy([item/rate for item in temparray]))
+                splHostArray = []
             else:
                 splHostArray.append(hostArray)
             counter += 1
-            print "splHostArray Len:%d"%len(splHostArray)
-            print 
-            if counter == 6:
-            #    for key in sorted(splDstatMatrix.iterkeys()):
-            #        print key
-            #        for v in splDstatMatrix.get(key):
-            #             print v
-            #        print
-                break
-            splDstatMatrix[timestamp] = splHostArray
-            
-            
 
-    def mergeDstats3(self):
-        self.readDstats()
+
+    def mergeSampleDstats(self):
+        self.sampleDstats(self.sampleRate)
+        with file(self.smplSummaryFile, "wb") as fobj:
+            titlerow = "#TIMESTAMP,Delta Time,Map Progress,Reduce Progress,"
+            hostrow = ""
+            for dt in ROW_TITLE:
+                titlerow += ","
+                hostrow += ","
+                for host in self.hosts:
+                    titlerow += dt+","
+                    hostrow += host+","
+            fobj.write( "#,,,,"+hostrow + "\n")
+            fobj.write( titlerow + "\n")
+            timedelta = 0
+            for timestamp in sorted(self.splDstatMatrix.iterkeys()):
+                hostArray = self.splDstatMatrix.get(timestamp)
+                row = "%s,%d,,"%(timestamp,timedelta)
+                for idata in range(len(ROW_TITLE)):
+                    row += ","
+                    for ihost in range(len(self.hosts)):
+                        if hostArray[ihost] is None:
+                            row += ","
+                        else:
+                            row += ","+str(hostArray[ihost][idata])
+                fobj.write(row+"\n")
+                timedelta += self.sampleRate
+
+    def mergeDstats(self):
         self.parseLog()
         timezero = self.getTimeZero()
+        mstart = 0
+        mend = 0
+        timeend = 0
         with file(self.summaryFile, "wb") as fobj:            
             titlerow = "#TIMESTAMP,Delta Time,Map Progress,Reduce Progress,"
             hostrow = ""
@@ -109,10 +139,17 @@ class HadoopTest(object):
                     hostrow += host+","
             fobj.write( "#,,,,"+hostrow + "\n")
             fobj.write( titlerow + "\n")
-            for timestamp in sorted(self.dstatMatrix.iterkeys()):
+            sortedkeys = sorted(self.dstatMatrix.iterkeys())
+            timeend = deltaTime(sortedkeys[-1],timezero)
+            print timeend
+            for timestamp in sortedkeys:
                 hostArray = self.dstatMatrix.get(timestamp)
                 mapprog,reduceprog="",""
                 timedelta = deltaTime(timestamp,timezero)
+                if timestamp == self.map_start:
+                    mstart = timedelta
+                if timestamp == self.map_end:
+                    mend = timedelta
                 if hostArray[len(self.hosts)] is not None:
                     [mapprog,reduceprog] = hostArray[len(self.hosts)]
                 row = "%s,%s,%s,%s"%(timestamp,timedelta,mapprog,reduceprog)
@@ -124,6 +161,10 @@ class HadoopTest(object):
                         else:
                              row += ","+str(hostArray[ihost][idata])
                 fobj.write(row+"\n")
+        with file(self.conffile,"wb") as fobj:
+           fobj.write("MSTART=%s\n"%str(mstart))
+           fobj.write("MEND=%s\n"%str(mend))
+           fobj.write("TIMEEND=%s\n"%timeend)
                     
     #def mergeDstats2(self):
     #    with file(self.summaryFile, "wb") as fobj:            
@@ -149,16 +190,25 @@ class LogFile(object):
     def __init__(self, filepath):
         self.logpath = filepath
         self.pattern = "map [0-9]+% reduce [0-9]+%$"
+        self.map_start = ""
+        self.map_end = ""
 
     def parse(self):
         progArray = []
+        if not os.path.exists(self.logpath):
+            print "No Log File %s found!"%self.logpath
+            return progArray
         with file(self.logpath,"rb")as fobj:
            lines = fobj.readlines()
            for line in lines:
                match = re.search(self.pattern, line)
-               if match:
+               if match:                   
                    info = line.strip().split(" ")
                    progArray.append([info[1]]+[info[6]]+[info[8]])
+                   if "map 0%" in line:
+                       self.map_start = info[1]
+                   if len(self.map_end) == 0 and "map 100%" in line:
+                       self.map_end = info[1]
         return progArray
 
 class DstatFile(object):
@@ -172,15 +222,18 @@ class DstatFile(object):
 
          
     def readlines(self):
+        if not os.path.exists(self.filepath):
+            print "No Dstat File %s found!"%self.filepath
+            return
         with file(self.filepath, "rb") as fobj:
             lnumber = 0 
             lines = fobj.readlines()
             for line in lines:
-                numbers = line.split(SEP)
+                numbers = line.strip().split(SEP)
                 lnumber += 1 
                 if lnumber < 8:
                     continue
-                datalist = self.parseline(map(float,numbers[1:]))
+                datalist = self.parseline(map(float,numbers[1:COLUMN_LENGTH]))
                 #self.timelines.append([numbers[0]]+ datalist)
                 timestamp = numbers[0].split(" ")[1]
                 if self.starttime == -1:
@@ -203,9 +256,16 @@ class DstatFile(object):
 
 
 if __name__ == "__main__":
-    TESTNAME = "sort_xinni_201504091654_120G-128Mblocksize-60Reduce"
-    hosts = ["r16s09","r16s10", "r16s11", "r16s12"]
-    test = HadoopTest(TESTNAME, hosts)
-    #test.mergeDstats()
-    test.sampleDstats(3)
+    if len(sys.argv) < 4:
+        print "need test name, samplerate, logname and hosts"
+        sys.exit(0)
+    TESTNAME = sys.argv[1]
+    samplerate = sys.argv[2]
+    logname = sys.argv[3]
+    hosts = sys.argv[4:]
+    print TESTNAME, samplerate, hosts
 
+    test = HadoopTest(TESTNAME, hosts, int(samplerate),logname)
+    test.readDstats()
+    test.mergeDstats()
+    test.mergeSampleDstats()
