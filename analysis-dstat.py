@@ -2,7 +2,6 @@ import os
 import sys
 import re
 from datetime import datetime
-import copy
 
 SEP=","
 MEMSIZE = 135221465088.00
@@ -20,7 +19,7 @@ ROW_TITLE = ["CPU_USR","CPU_SYS","CPU_IDLE",
 def deltaTime(time1, time2):
    time1 = datetime.strptime(time1, "%H:%M:%S")
    return str((time1-time2).seconds) 
-      
+
 class HadoopTest(object):
     def __init__(self, name, hosts, samplerate, logname):
         self.name = name
@@ -41,9 +40,6 @@ class HadoopTest(object):
     
     def getTimeZero(self):
         return datetime.strptime(min(self.starttime_dict.values()),"%H:%M:%S")
-
-    def getTimeLast(self):
-        return max(self.starttime_dict.values())
 
     def parseLog(self):
         logfile = LogFile(PATH_PREFIX+self.name+"/%s.log"%self.logname)
