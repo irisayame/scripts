@@ -2,6 +2,8 @@ import os
 import sys
 import re
 from datetime import datetime
+import copy
+import math
 
 SEP=","
 MEMSIZE = 135221465088.00
@@ -16,15 +18,27 @@ ROW_TITLE = ["CPU_USR","CPU_SYS","CPU_IDLE",
 [MEM_USED,MEM_CACHE,MEM_FREE,MEM_BUSY] = [4,5,6,7]
 [DISK_READ,DISK_WRITE,NET_RECV,NET_SEND] = [8,9,10,11]
 
+def procNumber(number):
+    sum = number
+    digit = 0 
+    while sum > 0:
+        digit += 1
+        sum = sum/10
+    if digit == 0:
+        return str(number)
+    div = 10**(digit-2)
+    ceiling = math.floor(number/div)*div*1.2
+    if digit >= 8:
+        return "%e"%ceiling
+    return "%d"%ceiling
+
 def deltaTime(time1, time2):
    time1 = datetime.strptime(time1, "%H:%M:%S")
    return str((time1-time2).seconds) 
-
+      
 class HadoopTest(object):
     def __init__(self, name, hosts, samplerate, logname):
         self.name = name
-        self.description = name
-        #self.dstatFiles = []
         self.dstatMatrix = {}
         self.splDstatMatrix = {}
         self.summaryFile = "%s%s/summary-%s.csv"%(PATH_PREFIX,name,name)
@@ -37,9 +51,13 @@ class HadoopTest(object):
         self.conffile = "gnu.conf"
         self.map_start = ""
         self.map_end = ""
+        self.maxTitleValues = [0]*len(ROW_TITLE)
     
     def getTimeZero(self):
         return datetime.strptime(min(self.starttime_dict.values()),"%H:%M:%S")
+
+    def getTimeLast(self):
+        return max(self.starttime_dict.values())
 
     def parseLog(self):
         logfile = LogFile(PATH_PREFIX+self.name+"/%s.log"%self.logname)
@@ -59,8 +77,6 @@ class HadoopTest(object):
             dsfile.readlines()
             self.starttimes = []
             self.starttime_dict[host] = dsfile.starttime
-            #self.dstatFiles.append(dsfile)
-
 
     def sampleDstats(self, rate):
         timelast = self.getTimeLast()
@@ -83,8 +99,9 @@ class HadoopTest(object):
                             if harray[ihost] is None:
                                 harray[ihost] = [0]*titleNumber
                             titleArray[iTitle].append(harray[ihost][iTitle])
-                    temparray = map(sum,titleArray)
-                    self.splDstatMatrix[timestamp].append(copy.copy([item/rate for item in temparray]))
+                    temparray = copy.copy([item/rate for item in map(sum,titleArray)])
+                    self.maxTitleValues = [max(i,j) for (i,j) in zip(temparray,self.maxTitleValues)]
+                    self.splDstatMatrix[timestamp].append(temparray)
                 splHostArray = []
             else:
                 splHostArray.append(hostArray)
@@ -93,6 +110,11 @@ class HadoopTest(object):
 
     def mergeSampleDstats(self):
         self.sampleDstats(self.sampleRate)
+        with file(self.conffile,'a') as fobj:
+            for (name,value) in zip(ROW_TITLE, self.maxTitleValues):
+                digits = value
+                fobj.write("MAX_%s=%s\n"%(name,procNumber(int(value))))
+
         with file(self.smplSummaryFile, "wb") as fobj:
             titlerow = "#TIMESTAMP,Delta Time,Map Progress,Reduce Progress,"
             hostrow = ""
@@ -137,7 +159,6 @@ class HadoopTest(object):
             fobj.write( titlerow + "\n")
             sortedkeys = sorted(self.dstatMatrix.iterkeys())
             timeend = deltaTime(sortedkeys[-1],timezero)
-            print timeend
             for timestamp in sortedkeys:
                 hostArray = self.dstatMatrix.get(timestamp)
                 mapprog,reduceprog="",""
@@ -210,7 +231,6 @@ class LogFile(object):
 class DstatFile(object):
     def __init__(self, filepath, dstatMatrix, hostNumber, hostIndex):
         self.filepath = filepath
-        #self.timelines = []
         self.globalDict = dstatMatrix
         self.hostNumber = hostNumber
         self.hostIndex = hostIndex
@@ -230,7 +250,6 @@ class DstatFile(object):
                 if lnumber < 8:
                     continue
                 datalist = self.parseline(map(float,numbers[1:COLUMN_LENGTH]))
-                #self.timelines.append([numbers[0]]+ datalist)
                 timestamp = numbers[0].split(" ")[1]
                 if self.starttime == -1:
                     self.starttime = timestamp

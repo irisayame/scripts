@@ -42,6 +42,6 @@ gnuplot -e "inputfile=\"$inputfile\";outputfile=\"$outputfile-disk-write.eps\";T
 gnuplot -e "inputfile=\"$inputfile\";outputfile=\"$outputfile-mem-busy.eps\";TIMEEND=$TIMEEND;i0=41;YLABEL=\"MEMORY (Bytes)\";YRANGE=14E10;YTICS=2E10;MSTART=$MSTART;MEND=$MEND" template.gnu
 gnuplot -e "inputfile=\"$inputfile\";outputfile=\"$outputfile-mem-used.eps\";TIMEEND=$TIMEEND;i0=26;YLABEL=\"MEMORY (Bytes)\";YRANGE=14E10;YTICS=2E10;MSTART=$MSTART;MEND=$MEND" template.gnu
 gnuplot -e "inputfile=\"$inputfile\";outputfile=\"$outputfile-net-recv.eps\";TIMEEND=$TIMEEND;i0=56;YLABEL=\"NET RECV (Byte/s)\";YRANGE=3E8;YTICS=4E7;MSTART=$MSTART;MEND=$MEND" template.gnu
-gnuplot -e "inputfile=\"$inputfile\";outputfile=\"$outputfile-net-send.eps\";TIMEEND=$TIMEEND;i0=61;YLABEL=\"NET SEND (Byte/s)\";YRANGE=3E8;YTICS=4E7;MSTART=$MSTART;MEND=$MEND" template.gnu
+gnuplot -e "inputfile=\"$inputfile\";outputfile=\"$outputfile-net-send.eps\";TIMEEND=$TIMEEND;i0=61;YLABEL=\"NET SEND (Byte/s)\";YRANGE=$MAX_NET_SEND;YTICS=4E7;MSTART=$MSTART;MEND=$MEND" template.gnu
 
 
