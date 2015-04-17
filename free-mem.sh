@@ -25,3 +25,4 @@ do
 	ssh root@r16s$h "$command"
 	echo ""
 done
+

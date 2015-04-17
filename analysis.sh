@@ -8,12 +8,12 @@ TOP_DIR=$(cd $(dirname "$0") && pwd)
 . $TOP_DIR/functions
 . $TOP_DIR/main.conf
 
-while getopts n:r:t: option
+while getopts t:s: option
 do
 	case "$option" in
-		n)
+		t)
 			TESTNAME=$OPTARG;;
-		r)
+		s)
 			SAMPLERATE=$OPTARG;;
 		\?)
 			gnuhint
@@ -27,6 +27,7 @@ done
 [[ -z $TESTNAME ]] && echo "TestName required!!" && gnuhint && exit 1
 [[ -z $SAMPLERATE ]] && echo "SAMPLERATE required!!" && gnuhint && exit 1
 
+TASK=`echo "$TESTNAME" | awk -F"_" '{print $1}'`
 if [ "$TASK" = "dfsioe" ] ; then
 	HADOOPLOG="run-read"
 else
@@ -34,5 +35,5 @@ else
 fi
 
 
-python analysis-dstat.py $TESTNAME $SAMPLERATE $HADOOPLOG ${HOSTS[@]}
-./gnu-run.sh -n $TESTNAME 
+python dsanalysis.py $TESTNAME $SAMPLERATE $HADOOPLOG ${HOSTS[@]}
+./gnuplotrun.sh -t $TESTNAME 

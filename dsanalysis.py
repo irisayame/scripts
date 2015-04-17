@@ -13,7 +13,7 @@ COLUMN_LENGTH=19
 
 ROW_TITLE = ["CPU_USR","CPU_SYS","CPU_IDLE",
     "CPU_BUSY","MEM_USED","MEM_CACHE","MEM_FREE","MEM_BUSY",
-    "DISK_READ","DISK_WRTIE","NET_RECV","NET_SEND"]
+    "DISK_READ","DISK_WRITE","NET_RECV","NET_SEND"]
 [CPU_USR,CPU_SYS,CPU_IDLE,CPU_BUSY] = [0,1,2,3]
 [MEM_USED,MEM_CACHE,MEM_FREE,MEM_BUSY] = [4,5,6,7]
 [DISK_READ,DISK_WRITE,NET_RECV,NET_SEND] = [8,9,10,11]
@@ -25,12 +25,15 @@ def procNumber(number):
         digit += 1
         sum = sum/10
     if digit == 0:
-        return str(number)
-    div = 10**(digit-2)
-    ceiling = math.floor(number/div)*div*1.2
+        return str(number),str(number*0.2)
+    div = 10**(digit-1)
+    floor = math.floor(number/div)*div
+    tic = floor/5
+    ticN = int(number/tic) + 1
+    ceiling = ticN * tic
     if digit >= 8:
-        return "%e"%ceiling
-    return "%d"%ceiling
+        return "%.1e"%ceiling,"%.1e"%tic
+    return "%d"%ceiling,"%d"%tic
 
 def deltaTime(time1, time2):
    time1 = datetime.strptime(time1, "%H:%M:%S")
@@ -48,7 +51,7 @@ class HadoopTest(object):
         self.starttime_dict = {}
         self.sampleRate = samplerate
         self.logname = logname
-        self.conffile = "gnu.conf"
+        self.conffile = ".gnu.conf"
         self.map_start = ""
         self.map_end = ""
         self.maxTitleValues = [0]*len(ROW_TITLE)
@@ -80,7 +83,7 @@ class HadoopTest(object):
 
     def sampleDstats(self, rate):
         timelast = self.getTimeLast()
-        counter = 1
+        counter = 0 
         hostNumber = len(self.hosts)
         titleNumber = len(ROW_TITLE)
         splHostArray = []
@@ -113,7 +116,9 @@ class HadoopTest(object):
         with file(self.conffile,'a') as fobj:
             for (name,value) in zip(ROW_TITLE, self.maxTitleValues):
                 digits = value
-                fobj.write("MAX_%s=%s\n"%(name,procNumber(int(value))))
+                yrange,ytics = procNumber(int(value))
+                fobj.write("MAX_%s=%s\n"%(name,yrange))
+                fobj.write("TICS_%s=%s\n"%(name,ytics))
 
         with file(self.smplSummaryFile, "wb") as fobj:
             titlerow = "#TIMESTAMP,Delta Time,Map Progress,Reduce Progress,"
@@ -126,10 +131,12 @@ class HadoopTest(object):
                     hostrow += host+","
             fobj.write( "#,,,,"+hostrow + "\n")
             fobj.write( titlerow + "\n")
-            timedelta = 0
-            for timestamp in sorted(self.splDstatMatrix.iterkeys()):
+            sortedkeys = sorted(self.splDstatMatrix.iterkeys())
+            timezero = datetime.strptime(sortedkeys[0],"%H:%M:%S")
+            for timestamp in sortedkeys:
                 hostArray = self.splDstatMatrix.get(timestamp)
-                row = "%s,%d,,"%(timestamp,timedelta)
+                timedelta = deltaTime(timestamp,timezero)
+                row = "%s,%s,,"%(timestamp,timedelta)
                 for idata in range(len(ROW_TITLE)):
                     row += ","
                     for ihost in range(len(self.hosts)):
@@ -138,7 +145,6 @@ class HadoopTest(object):
                         else:
                             row += ","+str(hostArray[ihost][idata])
                 fobj.write(row+"\n")
-                timedelta += self.sampleRate
 
     def mergeDstats(self):
         self.parseLog()
