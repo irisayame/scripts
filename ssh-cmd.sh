@@ -1,17 +1,13 @@
 #!/bin/bash 
 
-echo "usage ssh-cmd command"
 
-if [ "$#" != "1" ];then
-	echo "need 1 parameters"
-	exit 0
-fi
+. global.conf
 
-hosts="09 10 11 12"
+echo "executing $@ $hosts"
 
 for h in $hosts
 do
-	echo "r16s$h $1"
-	ssh r16s$h "$1"
+	echo "$h $@"
+	ssh $h "$@"
 	echo ""
 done
