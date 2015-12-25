@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html><head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title> DISK CONFIG</title>
+  <script type="text/javascript" src="jquery-1.11.3.min.js"></script><style type="text/css"></style>
+  <script type="text/javascript" src="jquery-ui.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="jquery-ui-1.9.2.css">
+  <style type="text/css">
+    .wrap {
+  width: 1200px;
+  border: 1px  solid;
+  font-size: 0;
+}
+.resizable {
+  height: 50px;
+  padding: 0.5em;
+  background-color: gray;
+  display: inline-block;
+}
+.ui-resizable-e {
+  cursor: e-resize;
+  width: 5px;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  background-color: white;
+}
+  </style>
+<script type="text/javascript">//<![CDATA[
+count=1;
+
+function loadresize(){$(function() {
+  width = 1200/count;
+  $(".resizable1").resizable({
+    autoHide: false,
+    handles: 'e',
+    resize: function(e, ui) {
+      var next = ui.element.next();
+      var divTwoWidth = totalWidth - ui.element.outerWidth();
+        next.width(divTwoWidth);
+      $("#block-length").html("outerWidth:"+ui.element.outerWidth());
+      //if (ui.element.outerWidth() < 100){
+      //     $(this).resizable('widget').trigger('mouseup');
+      //} else {
+      //     $(this).resizable('widget').trigger('mousedown');
+      //}
+    },
+    start: function(e, ui) {
+      //var parent = ui.element.parent();
+      //ui.element.css({
+      //  width: ui.element.width() / parent.width() * 100 + "%",
+      //});
+      var next = ui.element.next();
+      totalWidth = ui.element.outerWidth()+next.outerWidth();
+      $(this).resizable("option", "maxWidth", totalWidth-100);
+      $(this).resizable("option", "minWidth", "100");
+    },
+  });
+});};//]]> 
+
+
+function add_partition(){
+  if (count >= 10){
+      return;
+  }
+  width = 1200/(count+1);
+  count = count + 1;
+  $(".wrap").prepend("<div id=\"div-"+count+"\" class=\"resizable resizable1 ui-resizable\" style=\"top 0px; left:0px;height:50px;\"><div id=\"split-"+count+"\" class=\"ui-resizable-handle ui-resizable-e\" style=\"z-index:1000;\"></div></div>");
+  $(".resizable").css("width",width);
+  if (count%2 == 0){
+     $("#div-"+count).css("background-color","lightblue");
+  }
+  $(window).load(loadresize());
+  $("#div-1").empty();
+  $("#count-block").html(count);
+}
+
+</script>
+
+</head>
+<body style="cursor: auto;">
+  <div>Block Count:<span id="count-block">1</span></div>
+  <div>Info:<span id="block-length"></span></div>
+  <button id="add-part-btn" onclick="add_partition()" >Add partition</button>
+  <div class="wrap">
+    <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px; width:1200px">
+    </div>
+  </div>
+
+</body></html>
