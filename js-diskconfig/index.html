@@ -27,7 +27,7 @@
   </style>
 <script type="text/javascript">//<![CDATA[
 count=1;
-totalwidth=500;
+totalwidth=600;
 minwidth=100;
 maxpartition=totalwidth/minwidth;
 
@@ -132,7 +132,8 @@ function add_partition(){
   <br/>
   <br/>
   <div id="outer-div" class="wrap">
-    <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px;">
+    <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px; ">
+    <div style="background-color:gray"></div>
     </div>
   </div>
   <div id="part-list" style="padding: 10px">
@@ -143,6 +144,7 @@ function add_partition(){
 
 <script type="text/javascript">
 $("#outer-div").css("width", totalwidth);
+$("#div-1").css("width", totalwidth);
 $("#length-div-1").html("Partition 1: "+totalwidth);
 </script>
 </html>
