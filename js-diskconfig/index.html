@@ -7,7 +7,6 @@
   <link rel="stylesheet" type="text/css" href="jquery-ui-1.9.2.css">
   <style type="text/css">
     .wrap {
-  width: 1200px;
   border: 1px  solid;
   font-size: 0;
 }
@@ -28,17 +27,26 @@
   </style>
 <script type="text/javascript">//<![CDATA[
 count=1;
+totalwidth=500;
+minwidth=100;
+maxpartition=totalwidth/minwidth;
 
 function loadresize(){$(function() {
-  width = 1200/count;
+  var width = totalwidth/count;
   $(".resizable1").resizable({
     autoHide: false,
     handles: 'e',
     resize: function(e, ui) {
+      var div_id = $(this).attr("id");
+      var div_number = div_id.split("-")[1];
+      var length_div_id = "length-"+div_id;
+      var next_length_div_id = "length-div-"+(div_number-1);
+
       var next = ui.element.next();
       var divTwoWidth = totalWidth - ui.element.outerWidth();
         next.width(divTwoWidth);
-      $("#block-length").html("outerWidth:"+ui.element.outerWidth());
+      $("#"+length_div_id).html("Partition "+ div_number +": "+ui.element.outerWidth());
+      $("#"+next_length_div_id).html("Partition "+ (div_number-1) +": "+divTwoWidth);
       //if (ui.element.outerWidth() < 100){
       //     $(this).resizable('widget').trigger('mouseup');
       //} else {
@@ -52,20 +60,52 @@ function loadresize(){$(function() {
       //});
       var next = ui.element.next();
       totalWidth = ui.element.outerWidth()+next.outerWidth();
-      $(this).resizable("option", "maxWidth", totalWidth-100);
-      $(this).resizable("option", "minWidth", "100");
+      $(this).resizable("option", "maxWidth", totalWidth-minwidth);
+      $(this).resizable("option", "minWidth", minwidth);
     },
   });
 });};//]]> 
 
-
-function add_partition(){
-  if (count >= 10){
+function delete_partition(){
+  if (count == 2){
+      $("#delete-part-btn").prop("disabled",true);
+  }
+  if (count <=1 ){
       return;
   }
-  width = 1200/(count+1);
+  if (count <= maxpartition){
+      $("#add-part-btn").prop("disabled",false);
+  }
+  width = totalwidth/(count-1);
+  $("#div-"+count).remove();
+  $(".resizable").css("width",width);
+  $(window).load(loadresize());
+
+  $("#length-div-"+count).remove();
+
+  count = count - 1;
+  $("#count-block").html(count);
+  for (var i=1; i<=count; i=i+1){
+      var part_id = "#length-div-"+i;
+      $(part_id).html("Partition "+i+": "+width);
+      $(part_id).css("margin","1%");
+  }
+}
+
+function add_partition(){
+  if (count == maxpartition-1){
+      $("#add-part-btn").prop("disabled",true);
+  }
+  if (count >= maxpartition){
+      return;
+  }
   count = count + 1;
-  $(".wrap").prepend("<div id=\"div-"+count+"\" class=\"resizable resizable1 ui-resizable\" style=\"top 0px; left:0px;height:50px;\"><div id=\"split-"+count+"\" class=\"ui-resizable-handle ui-resizable-e\" style=\"z-index:1000;\"></div></div>");
+  width = totalwidth/count;
+  if (count > 1){
+      $("#delete-part-btn").prop("disabled",false);
+  }
+
+  $("#outer-div").prepend("<div id=\"div-"+count+"\" class=\"resizable resizable1 ui-resizable\" style=\"top 0px; left:0px;height:50px;\"><div id=\"split-"+count+"\" class=\"ui-resizable-handle ui-resizable-e\" style=\"z-index:1000;\"></div></div>");
   $(".resizable").css("width",width);
   if (count%2 == 0){
      $("#div-"+count).css("background-color","lightblue");
@@ -73,6 +113,12 @@ function add_partition(){
   $(window).load(loadresize());
   $("#div-1").empty();
   $("#count-block").html(count);
+  $("#part-list").append("<p id=\"length-div-"+count+"\"></p>")
+  for (var i=1; i<=count; i=i+1){
+      var part_id = "#length-div-"+i;
+      $(part_id).html("Partition "+i+": "+width);
+      $(part_id).css("margin","1%");
+  }
 }
 
 </script>
@@ -80,11 +126,23 @@ function add_partition(){
 </head>
 <body style="cursor: auto;">
   <div>Block Count:<span id="count-block">1</span></div>
-  <div>Info:<span id="block-length"></span></div>
+  <br/>
   <button id="add-part-btn" onclick="add_partition()" >Add partition</button>
-  <div class="wrap">
-    <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px; width:1200px">
+  <button id="delete-part-btn" onclick="delete_partition()" disabled="disabled">Delete partition</button>
+  <br/>
+  <br/>
+  <div id="outer-div" class="wrap">
+    <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px;">
     </div>
   </div>
+  <div id="part-list" style="padding: 10px">
+      <p>Info:</p>
+      <p id="length-div-1" style="margin:1%"></p>
+  </div>
+</body>
 
-</body></html>
+<script type="text/javascript">
+$("#outer-div").css("width", totalwidth);
+$("#length-div-1").html("Partition 1: "+totalwidth);
+</script>
+</html>
