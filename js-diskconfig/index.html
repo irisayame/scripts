@@ -4,139 +4,18 @@
   <title> DISK CONFIG</title>
   <script type="text/javascript" src="jquery-1.11.3.min.js"></script><style type="text/css"></style>
   <script type="text/javascript" src="jquery-ui.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="jquery-ui-1.9.2.css">
-  <style type="text/css">
-    .wrap {
-  border: 1px  solid;
-  font-size: 0;
-}
-.resizable {
-  height: 50px;
-  padding: 0.5em;
-  background-color: gray;
-  display: inline-block;
-}
-.ui-resizable-e {
-  cursor: e-resize;
-  width: 5px;
-  right: -5px;
-  top: 0;
-  bottom: 0;
-  background-color: white;
-}
-  </style>
-<script type="text/javascript">//<![CDATA[
-count=1;
-totalwidth=600;
-minwidth=100;
-maxpartition=totalwidth/minwidth;
-
-function loadresize(){$(function() {
-  var width = totalwidth/count;
-  $(".resizable1").resizable({
-    autoHide: false,
-    handles: 'e',
-    resize: function(e, ui) {
-      var div_id = $(this).attr("id");
-      var div_number = div_id.split("-")[1];
-      var length_div_id = "length-"+div_id;
-      var next_length_div_id = "length-div-"+(div_number-1);
-
-      var next = ui.element.next();
-      var divTwoWidth = totalWidth - ui.element.outerWidth();
-        next.width(divTwoWidth);
-      $("#info-"+div_id).html("Partition "+ (count-div_number+1) );
-      $("#"+length_div_id).html(ui.element.outerWidth());
-      $("#info-div-"+(div_number-1)).html("Partition "+ (count-div_number+2));
-      $("#"+next_length_div_id).html(divTwoWidth);
-      //if (ui.element.outerWidth() < 100){
-      //     $(this).resizable('widget').trigger('mouseup');
-      //} else {
-      //     $(this).resizable('widget').trigger('mousedown');
-      //}
-    },
-    start: function(e, ui) {
-      //var parent = ui.element.parent();
-      //ui.element.css({
-      //  width: ui.element.width() / parent.width() * 100 + "%",
-      //});
-      var next = ui.element.next();
-      totalWidth = ui.element.outerWidth()+next.outerWidth();
-      $(this).resizable("option", "maxWidth", totalWidth-minwidth);
-      $(this).resizable("option", "minWidth", minwidth);
-    },
-  });
-});};//]]> 
-
-function delete_partition(){
-  if (count == 2){
-      $("#delete-part-btn").prop("disabled",true);
-  }
-  if (count <=1 ){
-      return;
-  }
-  if (count <= maxpartition){
-      $("#add-part-btn").prop("disabled",false);
-  }
-  width = totalwidth/(count-1);
-  $("#div-"+count).remove();
-  $(".resizable").css("width",width);
-  $(window).load(loadresize());
-
-  $("#length-div-"+count).remove();
-  $("#info-div-"+count).remove();
-
-  count = count - 1;
-  $("#count-block").html(count);
-  for (var i=1; i<=count; i=i+1){
-      var part_id = "#length-div-"+i;
-      var info_id = "#info-div-"+i;
-      $(info_id).html("Partition "+(count-i+1));
-      $(part_id).html(width);
-      $(part_id).css("margin","1%");
-  }
-}
-
-function add_partition(){
-  if (count == maxpartition-1){
-      $("#add-part-btn").prop("disabled",true);
-  }
-  if (count >= maxpartition){
-      return;
-  }
-  count = count + 1;
-  width = totalwidth/count;
-  if (count > 1){
-      $("#delete-part-btn").prop("disabled",false);
-  }
-
-  $("#outer-div").prepend("<div id=\"div-"+count+"\" class=\"resizable resizable1 ui-resizable\" style=\"top 0px; left:0px;height:50px;\"><div id=\"split-"+count+"\" class=\"ui-resizable-handle ui-resizable-e\" style=\"z-index:1000;\"></div></div>");
-  $(".resizable").css("width",width);
-  if (count%2 == 0){
-     $("#div-"+count).css("background-color","lightblue");
-  }
-  $(window).load(loadresize());
-  $("#div-1").empty();
-  $("#count-block").html(count);
-  $("#part-info-list").prepend("<td id=\"info-div-"+count+"\"></td>")
-  $("#part-list").prepend("<td id=\"length-div-"+count+"\"></td>")
-  for (var i=1; i<=count; i=i+1){
-      var part_id = "#length-div-"+i;
-      var info_id = "#info-div-"+i;
-      $(info_id).html("Partition "+(count-i+1));
-      $(part_id).html(width);
-      $(part_id).css("margin","1%");
-  }
-}
-
-</script>
-
+  <link rel="stylesheet" type="text/css" href="jquery-ui-1.9.2.css"/>
+  <script type="text/javascript" src="disk.js"></script>
+  <link rel="stylesheet" type="text/css" href="disk.css" />
 </head>
+
 <body style="cursor: auto;">
   <div>Block Count:<span id="count-block">1</span></div>
+  <div>Disk Size (GB):<span id="disk-size"></span></div>
   <br/>
   <button id="add-part-btn" onclick="add_partition()" >Add partition</button>
   <button id="delete-part-btn" onclick="delete_partition()" disabled="disabled">Delete partition</button>
+  <button id="delete-part-btn" onclick="generate()">Generate</button>
   <br/>
   <br/>
   <div id="outer-div" class="wrap">
@@ -144,25 +23,29 @@ function add_partition(){
     <div style="background-color:gray"></div>
     </div>
   </div>
+  <br/>
   <div id="part-table">
     <table border="1">
         <tr id="part-info-list">
+            <th id="info-index">Partition</th>
 			<td id="info-div-1"></td>
         </tr>
         <tr id="part-list">
+            <th id="length-index">Size (GB)</th>
 			<td id="length-div-1"></td>
         </tr>
     </table>
   </div>
-  <!-- div id="part-list" style="padding: 10px">
-      <p id="length-div-1" style="margin:1%"></p>
-  </div -->
+  <div style="padding: 10px">
+      <prev id="json-field" style="margin:1%"></prev>
+  </div >
 </body>
 
 <script type="text/javascript">
+$("#disk-size").html(disksize);
 $("#outer-div").css("width", totalwidth);
 $("#div-1").css("width", totalwidth);
-$("#info-div-1").html("Partition 1");
-$("#length-div-1").html(totalwidth);
+$("#info-div-1").html("1");
+$("#length-div-1").html(calculate(totalwidth));
 </script>
 </html>

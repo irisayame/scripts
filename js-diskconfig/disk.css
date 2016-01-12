@@ -1,0 +1,22 @@
+table tr td{
+    width: 50px;
+}
+
+    .wrap {
+  border: 1px  solid;
+  font-size: 0;
+}
+.resizable {
+  height: 50px;
+  padding: 0.5em;
+  background-color: gray;
+  display: inline-block;
+}
+.ui-resizable-e {
+  cursor: e-resize;
+  width: 5px;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  background-color: white;
+}
