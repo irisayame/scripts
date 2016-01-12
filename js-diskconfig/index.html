@@ -45,8 +45,10 @@ function loadresize(){$(function() {
       var next = ui.element.next();
       var divTwoWidth = totalWidth - ui.element.outerWidth();
         next.width(divTwoWidth);
-      $("#"+length_div_id).html("Partition "+ div_number +": "+ui.element.outerWidth());
-      $("#"+next_length_div_id).html("Partition "+ (div_number-1) +": "+divTwoWidth);
+      $("#info-"+div_id).html("Partition "+ (count-div_number+1) );
+      $("#"+length_div_id).html(ui.element.outerWidth());
+      $("#info-div-"+(div_number-1)).html("Partition "+ (count-div_number+2));
+      $("#"+next_length_div_id).html(divTwoWidth);
       //if (ui.element.outerWidth() < 100){
       //     $(this).resizable('widget').trigger('mouseup');
       //} else {
@@ -82,12 +84,15 @@ function delete_partition(){
   $(window).load(loadresize());
 
   $("#length-div-"+count).remove();
+  $("#info-div-"+count).remove();
 
   count = count - 1;
   $("#count-block").html(count);
   for (var i=1; i<=count; i=i+1){
       var part_id = "#length-div-"+i;
-      $(part_id).html("Partition "+i+": "+width);
+      var info_id = "#info-div-"+i;
+      $(info_id).html("Partition "+(count-i+1));
+      $(part_id).html(width);
       $(part_id).css("margin","1%");
   }
 }
@@ -113,10 +118,13 @@ function add_partition(){
   $(window).load(loadresize());
   $("#div-1").empty();
   $("#count-block").html(count);
-  $("#part-list").append("<p id=\"length-div-"+count+"\"></p>")
+  $("#part-info-list").prepend("<td id=\"info-div-"+count+"\"></td>")
+  $("#part-list").prepend("<td id=\"length-div-"+count+"\"></td>")
   for (var i=1; i<=count; i=i+1){
       var part_id = "#length-div-"+i;
-      $(part_id).html("Partition "+i+": "+width);
+      var info_id = "#info-div-"+i;
+      $(info_id).html("Partition "+(count-i+1));
+      $(part_id).html(width);
       $(part_id).css("margin","1%");
   }
 }
@@ -136,15 +144,25 @@ function add_partition(){
     <div style="background-color:gray"></div>
     </div>
   </div>
-  <div id="part-list" style="padding: 10px">
-      <p>Info:</p>
-      <p id="length-div-1" style="margin:1%"></p>
+  <div id="part-table">
+    <table border="1">
+        <tr id="part-info-list">
+			<td id="info-div-1"></td>
+        </tr>
+        <tr id="part-list">
+			<td id="length-div-1"></td>
+        </tr>
+    </table>
   </div>
+  <!-- div id="part-list" style="padding: 10px">
+      <p id="length-div-1" style="margin:1%"></p>
+  </div -->
 </body>
 
 <script type="text/javascript">
 $("#outer-div").css("width", totalwidth);
 $("#div-1").css("width", totalwidth);
-$("#length-div-1").html("Partition 1: "+totalwidth);
+$("#info-div-1").html("Partition 1");
+$("#length-div-1").html(totalwidth);
 </script>
 </html>
