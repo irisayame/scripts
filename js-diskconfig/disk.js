@@ -53,6 +53,7 @@ function delete_partition(){
 
   $("#length-div-"+count).remove();
   $("#info-div-"+count).remove();
+  $("#tag-div-"+count).remove();
 
   count = count - 1;
   $("#count-block").html(count);
@@ -63,6 +64,8 @@ function delete_partition(){
       $(part_id).html(calculate(width));
       $(part_id).css("margin","1%");
   }
+ 
+  
 }
 
 function add_partition(){
@@ -88,6 +91,8 @@ function add_partition(){
   $("#count-block").html(count);
   $("<td id=\"info-div-"+count+"\"></td>").insertAfter($("#info-index"));
   $("<td id=\"length-div-"+count+"\"></td>").insertAfter($("#length-index"));
+  $("<td id=\"tag-div-"+count+"\"><p id=\"tag-"+count+"\" onclick=\"addtag(this)\">click to edit</p></td>").insertAfter($("#tag-index"));
+  $("td p").addEffect();
   for (var i=1; i<=count; i=i+1){
       var part_id = "#length-div-"+i;
       var info_id = "#info-div-"+i;
@@ -98,14 +103,49 @@ function add_partition(){
 }
 
 function generate(){
+    var diskconfig = {"raid_arrays":null, "filesystems":null};
     var values = [];
+    var tags = [];
     $("#part-list").find("td").each(function(){
 		values.push($(this).text());
 	});
-    alert(JSON.stringify(values));
-    var raid_arrays = {"primary": true, "partitions":[]};
+    $("#tag-list").find("td p").each(function(){
+		tags.push($(this).text());
+	});
+    var raid_arrays = [{"primary": true, "partitions":[]}];
+    var filesystems = []
     for (var i in values){
-      raid_arrays["partitions"].push({"size":values[i], "label":""});
+      raid_arrays[0]["partitions"].push({"size":values[i], "label":tags[i]});
+      filesystems.push({"label":tags[i], "mount_point":null, "fs_type":null})
     }  
-    $("#json-field").html(JSON.stringify(raid_arrays));
+    diskconfig["raid_arrays"] = raid_arrays
+    diskconfig["filesystems"] = filesystems
+    $("#json-field").html(JSON.stringify(diskconfig));
    }
+
+$.fn.addEffect = function() {
+   $(this).hover(function() {
+      $(this).addClass('hover');
+   }, function() {
+      $(this).removeClass('hover');
+   });
+};
+
+function addtag(element){
+     var index = $(element).attr("id").split("-")[1]
+     var replaceWith = $('<input type="text" id="temp-'+index+'" />');
+     $(element).hide();
+     $(element).after(replaceWith);
+     if ($(element).text() != "click to edit"){
+         replaceWith.val($(element).text());
+     }
+     replaceWith.focus();
+
+     replaceWith.blur(function() {
+       if (replaceWith.val() != "") {
+           $(element).text(replaceWith.val());
+       }
+       replaceWith.remove();
+       $(element).show();
+     });
+ };   

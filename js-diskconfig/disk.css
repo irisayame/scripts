@@ -1,5 +1,6 @@
 table tr td{
-    width: 50px;
+    text-align:center;
+    width: 100px;
 }
 
     .wrap {
@@ -20,3 +21,14 @@ table tr td{
   bottom: 0;
   background-color: white;
 }
+p{
+  margin: 2px;
+}
+p.hover{
+  background-color:#fff69b
+}
+input{
+  width: 80%;
+  margin: 2px;
+}
+
