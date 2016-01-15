@@ -3,7 +3,8 @@ totalwidth=600;
 minwidth=100;
 maxpartition=totalwidth/minwidth;
 disksize=120;
-bccolor=909090;
+bccolor=808080;
+raid_count=0;
 
 function calculate(width){
     return width*disksize/totalwidth;
@@ -39,7 +40,7 @@ function loadresize(){$(function() {
 
 
 function delete_partition(){
-  bccolor = bccolor+101010;
+  bccolor = bccolor+111111;
   if (count == 2){
       $("#delete-part-btn").prop("disabled",true);
   }
@@ -63,17 +64,20 @@ function delete_partition(){
   for (var i=1; i<=count; i=i+1){
       var part_id = "#length-div-"+i;
       var info_id = "#info-div-"+i;
+      var tag_id = "#tag-"+i;
       $(info_id).html(count-i+1);
       $(part_id).html(calculate(width));
       $(part_id).css("margin","1%");
+      $(tag_id).html("Disk-"+(count-i+1));
   }
-$("#part-info-list td").each(function(){
+
+  $("#part-info-list td").each(function(){
     $(this).css("width", 80/count+"%");
-});
+  });
 }
 
 function add_partition(){
-  bccolor = bccolor-101010;
+  bccolor = bccolor-111111;
   if (count == maxpartition-1){
       $("#add-part-btn").prop("disabled",true);
   }
@@ -111,6 +115,8 @@ function add_partition(){
   $("#part-info-list td").each(function(){
       $(this).css("width", 80/count+"%");
   });
+
+  
 }
 
 function generate(){
@@ -125,13 +131,13 @@ function generate(){
 	});
     var raid_arrays = [{"primary": true, "partitions":[]}];
     var filesystems = []
-    for (var i in values){
+    for (var i in values){undefined
       raid_arrays[0]["partitions"].push({"size":values[i], "label":tags[i]});
       filesystems.push({"label":tags[i], "mount_point":null, "fs_type":null})
     }  
     diskconfig["raid_arrays"] = raid_arrays
     diskconfig["filesystems"] = filesystems
-    $("#json-field").html(JSON.stringify(diskconfig,null,4));
+    $("#json-field").html(JSON.stringify(diskconfig,null,2));
    }
 
 $.fn.addEffect = function() {
@@ -142,9 +148,25 @@ $.fn.addEffect = function() {
    });
 };
 
+function raid_partition(raid_count){
+    if ( count < raid_count ){
+        while( count < raid_count){
+            $("#add-part-btn").click();
+          
+        }
+    } else if  ( count > raid_count ){
+        while( count > raid_count){
+            $("#delete-part-btn").click();
+          
+        }
+    }
+    $(".ui-resizable-handle").remove();
+
+}
+
 function addtag(element){
      var index = $(element).attr("id").split("-")[1]
-     var replaceWith = $('<input type="text" id="temp-'+index+'" />');
+     var replaceWith = $('<input type="text" id="temp-'+index+'" style="display:inline"/>');
      $(element).hide();
      $(element).after(replaceWith);
      if ($(element).text() != "click to edit"){
@@ -160,3 +182,4 @@ function addtag(element){
        $(element).show();
      });
  };   
+

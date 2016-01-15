@@ -11,7 +11,7 @@ table tr th{
 }
 table tr td{
     text-align:center;
-    padding:0;
+    padding:auto;
 }
 
 .inline{
@@ -46,5 +46,6 @@ p.hover{
 input{
   max-width: 80px;
   width: auto !important;
+  text-align:center;
 }
 
