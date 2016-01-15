@@ -1,11 +1,27 @@
+table {
+    border-collapse: collapse;
+	width: 750px;
+    
+}
+table tr th{
+    width:20%;
+    text-align:center;
+    background-color: lightblue;
+    color: #000044;
+}
 table tr td{
     text-align:center;
-    width: 100px;
+    padding:0;
+}
+
+.inline{
+	background-color:#ececec;
 }
 
     .wrap {
   border: 1px  solid;
   font-size: 0;
+  margin-left:150px;
 }
 .resizable {
   height: 50px;
@@ -28,7 +44,7 @@ p.hover{
   background-color:#fff69b
 }
 input{
-  width: 80%;
-  margin: 2px;
+  max-width: 80px;
+  width: auto !important;
 }
 

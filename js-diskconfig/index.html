@@ -10,6 +10,10 @@
 </head>
 
 <body style="cursor: auto;">
+
+
+<div id="">
+  <h1>Create Partitions</h1>
   <div>Block Count:<span id="count-block">1</span></div>
   <div>Disk Size (GB):<span id="disk-size"></span></div>
   <br/>
@@ -19,7 +23,7 @@
   <br/>
   <br/>
   <div id="outer-div" class="wrap">
-    <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px; " onclick="add_tag()">
+    <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px; ">
     <div style="background-color:gray"></div>
     </div>
   </div>
@@ -28,7 +32,7 @@
     <table border="1">
         <tr id="part-info-list">
             <th id="info-index">Partition</th>
-			<td id="info-div-1"></td>
+			<td id="info-div-1">1</td>
         </tr>
         <tr id="part-list">
             <th id="length-index">Size (GB)</th>
@@ -36,13 +40,14 @@
         </tr>
         <tr id="tag-list">
             <th id="tag-index">Tag</th>
-            <td id="tag-div-1"><p id="tag-1" onclick="addtag(this)">click to edit</p></td>
+            <td id="tag-div-1"><p class="inline" id="tag-1" onclick="addtag(this)">Disk-1</p></td>
         </tr>
     </table>
   </div>
   <div style="padding: 10px">
-      <prev id="json-field" style="margin:1%"></prev>
+      <div id="json-field" style="margin:1%"></div>
   </div >
+</div>
 </body>
 
 <script type="text/javascript">
