@@ -7,9 +7,10 @@
         <script src="js/jquery.steps.min.js"></script>
         <script type="text/javascript" src="js/jquery-ui.min.js"></script>
         <script type="text/javascript" src="js/disk.js"></script>
-        <script type="text/javascript" src="js/steps.js"></script>
+        <script type="text/javascript" src="js/select.js"></script>
         <script type="text/javascript" src="js/raphael-min.js"></script>
         <script type="text/javascript" src="js/rectangle.js"></script>
+        <script type="text/javascript" src="js/steps.js"></script>
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/jquery.steps.css">
@@ -24,10 +25,10 @@
                 <h2>RAID & Group</h2>
                 <section>      
                     <div id="group-type">
-                        <label for="logical">Logical Volume Group</label>
-                        <input type="radio" id="group_logical" name="group" value="logical"/>
-                        <label for="raid">RAID</label>
-                        <input type="radio" id="group_raid" name="group" value="raid"/>
+                          <div id="radio">
+                            <input type="radio" id="group_logical" name="group" value="logical"><label for="group_logical">Logical Volume Group</label>
+                            <input type="radio" id="group_raid" name="group" value="raid"><label for="group_raid">RAID</label>
+                          </div>
                         <div id="logical-div" class="radio-div" style="display:none">
                         Logical
                         </div>
@@ -35,7 +36,7 @@
                         <div id="raid-div" class="radio-div" style="display:none">
                         RAID Config:
                         <select>
-                            <option value="raid0">RAID 0</option>
+                            <option value="raid0" selected>RAID 0</option>ion>
                             <option value="raid1">RAID 1</option>
                             <option value="raid10">RAID 10</option>
                             <option value="raid5">RAID 5</option>
@@ -48,8 +49,8 @@
                         <div>Block Count:<span id="count-block">1</span></div>
                         <div>Disk Size (GB):<span id="disk-size"></span></div>
                         <br/>
-                        <button id="add-part-btn" onclick="add_partition()" >Add partition</button>
-                        <button id="delete-part-btn" onclick="delete_partition()" disabled="disabled">Delete partition</button>
+                        <button id="add-part-btn" onclick="add_partition()">Add partition</button>
+                        <button id="delete-part-btn" onclick="delete_partition()">Delete partition</button>
                         <br/>
                         <br/>
                         <div id="outer-div" class="wrap">
@@ -81,12 +82,17 @@
                 <section>                    
                     <div id="holder">
                     </div>
-                    <div id="filesystem"></div>
+                    <div id="filesystem-div"> 
+                        <button id="add-vg-btn" onclick="add_vg()">Add Volume Group</button>
+                        <button id="delete-vg-btn" onclick="delete_vg()">Remove Volume Group</button>
+                        <div id="group-disk-div">
+                        </div>
+                    </div>
                 </section>
 
                 <h2>Confirm</h2>
                 <section>
-                    <h1>Configuration JSON</h1>
+                    <h1>ConfiguratiAIDon JSON</h1>
                     <prev id="json-field" style="margin:1%"></prev>
                 </section>
             </div>
@@ -98,7 +104,11 @@ $("#div-1").css("width", totalwidth);
 $("#info-div-1").html("1");
 $("#length-div-1").html(calculate(totalwidth));
 $("td p").addEffect();
+$( "#add-part-btn" ).button({disabled: false});
+$( "#delete-part-btn" ).button({disabled: true});
 $(function(){
+    $( "button" ).button();
+    $( "#radio" ).buttonset();
     $('input[type=radio]').change(function(){
         var type = $(this).val();
         console.log(type);
@@ -106,28 +116,19 @@ $(function(){
         $("#"+type+"-div").show();
         $("#partition-group").show()
         if(type == "logical"){
-            $(".radio-div").hide();
-
+            console.log(type);
+            lvm_partition();
         } else if(type == "raid"){
+            var raidtype = $("option:selected").val();
+            console.log(type+", "+raidtype);
+            raid_partition(raidtype);
         }
          
     });
 
     $('select').change(function(){
         var raidtype = $(this).val();
-        var raidcount = 0;
-        if (raidtype == "raid5"){
-            raidcount = 4;
-        } else if (raidtype == "raid6"){
-            raidcount = 4;
-        } else if (raidtype == "raid0"){
-            raidcount = 2;
-        } else if (raidtype == "raid1"){
-            raidcount = 2;
-        } else if (raidtype == "raid10"){
-            raidcount = 2;
-        }
-        raid_partition(raidcount);
+        raid_partition(raidtype);
     });
 })
 </script>

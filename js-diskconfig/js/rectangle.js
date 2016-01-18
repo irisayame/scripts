@@ -20,16 +20,21 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
                 bcolor = Raphael.hsb(start, 1, 1);
             var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: "90-" + bcolor + "-" + color, stroke: stroke, "stroke-width": 3});
             var txt = paper.text(cx + prewidth+width/2, cy + height * 1.5, labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": 20});
+            var tag = paper.text(cx + prewidth+width/2, cy + height/5, labels[j]).attr({fill:"#000",stroke: "none", opacity: 1, "font-size": 20});
+
            prewidth = prewidth + width;
            p.mouseover(function () {
                 p.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
                 txt.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
+                tag.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
             }).mouseout(function () {
                 p.stop().animate({transform: ""}, ms, "elastic");
                 txt.stop().animate({transform: ""}, ms, "elastic");
+                tag.stop().animate({transform: ""}, ms, "elastic");
             }); 
             chart.push(p);
             chart.push(txt);
+            chart.push(tag)
             start += .1;
         };
     for (i = 0; i < values.length; i++) {
