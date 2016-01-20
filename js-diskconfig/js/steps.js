@@ -1,12 +1,5 @@
 function generate(){
-    var diskconfig = {"raid_arrays":null, "filesystems":null};
-    var raid_arrays = [{"primary": true, "partitions":[]}];
-    var filesystems = get_mountfs();
-    for (var i in values){
-      raid_arrays[0]["partitions"].push({"size":values[i], "label":tags[i]});
-    }  
-    diskconfig["raid_arrays"] = raid_arrays
-    diskconfig["filesystems"] = filesystems
+    var diskconfig = {"raid_arrays":raid_arrays, "lvm_volume_groups":lvm_groups,"filesystems":filesystems};
     $("#json-field").html(JSON.stringify(diskconfig,null,2));
    }
 
@@ -19,13 +12,18 @@ $(function ()
         transitionEffect: "fade",
         onStepChanged: function (event, currentIndex, priorIndex)
         {
-            $(".wizard.vertical > .content").css("overflow","visible");
-            if(currentIndex == 1){
-                $(".wizard.vertical > .content").css("overflow","auto");
-                raphael();
-                collect_diskinfo();
-            }else if (currentIndex == 2){
-                $(".wizard.vertical > .content").css("overflow","auto");
+            $(".wizard.vertical > .content").css("overflow","auto");
+            if (currentIndex == 1){
+                save_partition();
+                get_pvg_labels();
+            }
+            else if(currentIndex == 2){
+                get_lvm_configs();
+                get_fs_labels();
+                show_fs_table();
+               // raphael();
+            }else if (currentIndex == 3){
+                get_fs_configs()
                 generate();
             }
         }

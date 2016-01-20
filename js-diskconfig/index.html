@@ -11,10 +11,10 @@
         <script type="text/javascript" src="js/raphael-min.js"></script>
         <script type="text/javascript" src="js/rectangle.js"></script>
         <script type="text/javascript" src="js/steps.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.2.css"/>
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/jquery.steps.css">
-        <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.2.css"/>
         <link rel="stylesheet" type="text/css" href="css/disk.css" />
         <link rel="stylesheet" type="text/css" href="css/steps.css" />
     </head>
@@ -22,72 +22,92 @@
         <div class="content">
             <h1>Disk Configuration</h1>
             <div id="wizard">
-                <h2>RAID & Group</h2>
-                <section>      
-                    <div id="group-type">
-                          <div id="radio">
-                            <input type="radio" id="group_logical" name="group" value="logical"><label for="group_logical">Logical Volume Group</label>
-                            <input type="radio" id="group_raid" name="group" value="raid"><label for="group_raid">RAID</label>
-                          </div>
-                        <div id="logical-div" class="radio-div" style="display:none">
-                        Logical
-                        </div>
+                <h2>RAID Arrays</h2>
+                <section>
+                    <div id="partition-group">
+                        <h2>RAID Arrays</h2>
+                        <button id="add-raid-btn" onclick="add_raid()">Add RAID Array</button>
+                        <button id="delete-raid-btn" onclick="delete_raid()">Delete RAID Array</button>
+                        <br/><br/>
+                        <table border="1" id="raid-table">
+                            <tr>
+                                <th>No.</th>
+                                <th>Partitions</th>
+                                <th>Primary</th>
+                            </tr>
+                        </table>
 
-                        <div id="raid-div" class="radio-div" style="display:none">
-                        RAID Config:
-                        <select>
-                            <option value="raid0" selected>RAID 0</option>ion>
-                            <option value="raid1">RAID 1</option>
-                            <option value="raid10">RAID 10</option>
-                            <option value="raid5">RAID 5</option>
-                            <option value="raid6">RAID 6</option>
-                        </select>
-                        </div>
-                    </div>
-                    <div id="partition-group" style="display:none;">
-                        <h1>Create Partitions</h1>
-                        <div>Block Count:<span id="count-block">1</span></div>
-                        <div>Disk Size (GB):<span id="disk-size"></span></div>
-                        <br/>
-                        <button id="add-part-btn" onclick="add_partition()">Add partition</button>
-                        <button id="delete-part-btn" onclick="delete_partition()">Delete partition</button>
-                        <br/>
-                        <br/>
-                        <div id="outer-div" class="wrap">
-                            <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px; ">
-                                <div style="background-color:gray"></div>
+                        <div id="partition-div" style="display:none">
+                            <h3>Partitions of RAID <p id="current-index" style="display:inline"></p></h3>
+                            <div>Block Count:<span id="count-block">0</span></div>
+                            <div>Disk Size (GB):<span id="disk-size"></span></div>
+                            <br/>
+                            <button id="add-part-btn" onclick="add_partition()">Add Partition</button>
+                            <button id="delete-part-btn" onclick="delete_partition()">Delete Partition</button>
+                            <button id="save-part-btn" onclick="save_partition()">Save Current Partition</button>
+                            <br/>
+                            <br/>
+                            <div id="outer-div" class="wrap">
+                                <div id="div-1" class="resizable resizable1 ui-resizable" style="top: 0px; left: 0px; height: 50px; ">
+                                    <div style="background-color:gray"></div>
+                                </div>
                             </div>
-                        </div>
-                        <br/>
-                        <div id="part-table">
-                            <table border="1">
-                                <tr id="part-info-list">
-                                    <th id="info-index">Partition</th>
-                                    <td id="info-div-1">1</td>
-                                </tr>
-                                <tr id="part-list">
-                                    <th id="length-index">Size (GB)</th>
-                                    <td id="length-div-1"></td>
-                                </tr>
-                                <tr id="tag-list">
-                                    <th id="tag-index">Tag</th>
-                                    <td id="tag-div-1"><p class="inline" id="tag-1" onclick="addtag(this)">Disk-1</p></td>
-                                </tr>
-                            </table>
+                            <br/>
+                            <div id="part-table">
+                                <table border="1">
+                                    <tr id="part-info-list">
+                                        <th id="info-index">Partition</th>
+                                        <td id="info-div-1">Unused</td>
+                                    </tr>
+                                    <tr id="part-list">
+                                        <th id="length-index">Size (GB)</th>
+                                        <td id="length-div-1"></td>
+                                    </tr>
+                                    <tr id="tag-list">
+                                        <th id="tag-index">Tag</th>
+                                        <td id="tag-div-1">Unused</td>
+                                    </tr>
+                                    <tr id="lvmtag-list">
+                                        <th id="lvmtag-index">Use LVM</th>
+                                        <td id="lvmtag-div-1"></td>
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </section>                    
+
+                <h2>Logical Volume Groups</h2>
+                <section>        
+                    <div id="lvg-div"> 
+                        <h2>Logical Volume Group</h2>
+                        <button id="add-vg-btn" onclick="add_vg()">Add Volume Group</button>
+                        <button id="delete-vg-btn" onclick="delete_vg()">Remove Volume Group</button>
+                        <button id="add-vol-btn" onclick="add_vol()">Add Volume</button>
+                        <button id="delete-vol-btn" onclick="delete_vol()">Delete Volume</button>
+                        <br></br>
+                        <div id="pvg-label-div">
+                        </div>
+                    </div>
+                </section>
+
+
 
                 <h2>File Systems</h2>
                 <section>                    
                     <div id="holder">
                     </div>
-                    <div id="filesystem-div"> 
-                        <button id="add-vg-btn" onclick="add_vg()">Add Volume Group</button>
-                        <button id="delete-vg-btn" onclick="delete_vg()">Remove Volume Group</button>
-                        <div id="group-disk-div">
-                        </div>
-                    </div>
+                    <h1>File Systems</h1>
+                    <table border="1">
+                        <tr>
+                            <th>No.</th>
+                            <th>Label</th>
+                            <th>Size</th>
+                            <th>File System</th>
+                            <th>Mount Point</th>
+                        </tr>
+                        <tbody id="filesystem-table"></tbody> 
+                    </table>
                 </section>
 
                 <h2>Confirm</h2>
@@ -106,21 +126,21 @@ $("#length-div-1").html(calculate(totalwidth));
 $("td p").addEffect();
 $( "#add-part-btn" ).button({disabled: false});
 $( "#delete-part-btn" ).button({disabled: true});
+$( "#save-part-btn" ).button({disabled: true});
+$( "#delete-raid-btn" ).button({disabled: true});
+
 $(function(){
     $( "button" ).button();
     $( "#radio" ).buttonset();
     $('input[type=radio]').change(function(){
         var type = $(this).val();
-        console.log(type);
         $(".radio-div").hide();
         $("#"+type+"-div").show();
         $("#partition-group").show()
         if(type == "logical"){
-            console.log(type);
             lvm_partition();
         } else if(type == "raid"){
             var raidtype = $("option:selected").val();
-            console.log(type+", "+raidtype);
             raid_partition(raidtype);
         }
          

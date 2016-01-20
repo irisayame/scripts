@@ -20,7 +20,7 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
                 bcolor = Raphael.hsb(start, 1, 1);
             var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: "90-" + bcolor + "-" + color, stroke: stroke, "stroke-width": 3});
             var txt = paper.text(cx + prewidth+width/2, cy + height * 1.5, labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": 20});
-            var tag = paper.text(cx + prewidth+width/2, cy + height/5, labels[j]).attr({fill:"#000",stroke: "none", opacity: 1, "font-size": 20});
+            var tag = paper.text(cx + prewidth+width/2, cy + height/5, labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 20});
 
            prewidth = prewidth + width;
            p.mouseover(function () {
@@ -47,13 +47,14 @@ function raphael() {
     var values = [];
     var sizes = [];
     var labels = [];
-    $("#part-list").find("td").each(function(){
-		sizes.push($(this).text());
-		values.push(parseInt($(this).text())/1.2);
-	});
-    $("#tag-list").find("td p").each(function(){
-		labels.push($(this).text());
-	});
+    $.each(disk_arrays,function(key,value){
+        labels.push(key)
+        sizes.push(value)
+        values.push(parseInt(value)/1.2);
+    });
+    console.log(values)
+    console.log(sizes)
+    console.log(labels)
     $("#holder").empty();
-    Raphael("holder", 800, 150).rectChart(10, 10, values, labels, sizes, "#fff");
+    Raphael("holder", 900, 150).rectChart(10, 10, values, labels, sizes, "#fff");
 }

@@ -19,7 +19,7 @@ table tr td{
 }
 
 .inline{
-	background-color:#ececec;
+	background-color:#fbf9ee;
 }
 
     .wrap {
@@ -45,19 +45,39 @@ p{
   margin: 2px;
 }
 p.hover{
-  background-color:#fff69b
+  background-color:#b0c4de;
+  cursor:pointer;
 }
+
 input{
   max-width: 80px;
   width: auto !important;
   text-align:center;
+  border-radius:4px;
+}
+input[type=checkbox]{
+  cursor:pointer;
 }
 .ui-button-text-only .ui-button-text {
-    padding: .3em .5em;
+  padding: .3em .5em;
 }
 
+.selectable {margin:0px}
 .selectable .ui-selecting { background: #B0C4DE; }
 .selectable .ui-selected { background: #4682B4; color: white; }
 .selectable .block {background:#C0C0C0}
 .selectable { list-style-type: none; font-size:12px;}
 .selectable li { margin: 3px; padding: 1px; float: left; width: 50px; height: 40px; font-size: 1.2em; text-align: center; }
+.ui-state-default{border:1px solid #121212;background-image:none;}
+.ui-button:hover{background-color:#fff;color:#000}
+.ui-button-disabled:hover {background-color:#e6e6e6;color:#555555}
+.wizard > .content{min-height:45em;}
+.wizard.vertical > .content{overflow:auto;}
+.wizard > .content > .body input {display: inline;}
+
+label{font-size:16px; }
+
+select{
+    border-radius:4px;
+    background-color:#fff;
+}

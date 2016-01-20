@@ -1,16 +1,52 @@
 count=1;
 totalwidth=600;
-minwidth=100;
+minwidth=0;
 minpartition=1;
-maxpartition=totalwidth/minwidth;
+maxpartition=5+1//totalwidth/minwidth;
 disksize=120;
 bccolor=808080;
 raid_count=0;
 
-values = [];
-tags = [];
-selected = [];
+disk_arrays={};
+raid_arrays=[];
+lvm_groups=[];
+fslabels=[];
+fssizes=[];
+filesystems=[];
+current_index = 0;
+raid_array_count = 0;
+max_raids = 1;
 
+
+function add_raid(){
+    if ( raid_array_count >= max_raids-1){
+        $("#add-raid-btn").button("option", "disabled",true);
+    }
+    $("#delete-raid-btn").button("option", "disabled",false);
+    $("#save-part-btn").button("option", "disabled",false);
+    $("#partition-div").show();
+    current_index = raid_array_count;
+    var primary = false, checked="";
+    if (current_index == 0){
+        primary = true;
+        checked="checked";
+    }
+    $("#current-index").html((current_index+1))
+    var newrow = $("<tr id=\"raid-row-"+current_index+"\"><td>"+(raid_array_count+1)+"</td><td id=\"raidpartid-"+current_index+"\">0</td><td><input type=\"checkbox\" "+checked+" disabled=\"disabled\"</td></tr>");
+    $("#raid-table").append(newrow);
+    raid_arrays.push({"partitions":null,"primary_storage":primary})
+    raid_array_count = raid_array_count + 1;
+}
+
+function delete_raid(){
+    if (raid_array_count <= 2){
+        $("#delete-raid-btn").button("option", "disabled",true);
+    }
+    $("#add-raid-btn").button("option", "disabled",false);
+    raid_arrays.pop()
+    raid_array_count = raid_array_count - 1;
+    $("#raid-row-"+raid_array_count).remove();
+}
 
 function calculate(width){
     return width*disksize/totalwidth;
@@ -36,6 +72,7 @@ function loadresize(){$(function() {
       $("#"+next_length_div_id).html(calculate(divTwoWidth));
     },
     start: function(e, ui) {
+      $("#save-part-btn").button("option", "disabled",false);
       var next = ui.element.next();
       totalWidth = ui.element.outerWidth()+next.outerWidth();
       $(this).resizable("option", "maxWidth", totalWidth-minwidth);
@@ -64,22 +101,23 @@ function delete_partition(){
   $("#length-div-"+count).remove();
   $("#info-div-"+count).remove();
   $("#tag-div-"+count).remove();
+  $("#lvmtag-div-"+count).remove();
 
   count = count - 1;
   $("#count-block").html(count);
   for (var i=1; i<=count; i=i+1){
-      var part_id = "#length-div-"+i;
-      var info_id = "#info-div-"+i;
-      var tag_id = "#tag-"+i;
-      $(info_id).html(count-i+1);
-      $(part_id).html(calculate(width));
-      $(part_id).css("margin","1%");
-      $(tag_id).html("Disk-"+(count-i+1));
+      $("#info-div-"+i).html(count-i+1);
+      $("#length-div-"+i).html(calculate(width));
+      $("#length-div-"+i).css("margin","1%");
+      if (i > 1){
+          $("#tag-"+i).html("Disk-"+(count-i+1));
+      }
   }
 
   $("#part-info-list td").each(function(){
     $(this).css("width", 80/count+"%");
   });
+  $("#save-part-btn").button("option", "disabled",false);
 }
 
 function add_partition(){
@@ -98,25 +136,22 @@ function add_partition(){
 
   $("#outer-div").prepend("<div id=\"div-"+count+"\" class=\"resizable resizable1 ui-resizable\" style=\"top 0px; left:0px;height:50px;\"><div id=\"split-"+count+"\" class=\"ui-resizable-handle ui-resizable-e\" style=\"z-index:1000;\"></div></div>");
   $(".resizable").css("width",width);
-  //if (count%2 == 0){
-  //   $("#div-"+count).css("background-color","lightblue");
- //}
   $("#div-"+count).css("background-color","#"+bccolor);
   $(window).load(loadresize());
   $("#div-1").empty();
   $("#count-block").html(count);
   $("<td id=\"info-div-"+count+"\"></td>").insertAfter($("#info-index"));
   $("<td id=\"length-div-"+count+"\"></td>").insertAfter($("#length-index"));
-  $("<td id=\"tag-div-"+count+"\"><p id=\"tag-"+count+"\" class=\"inline\" onclick=\"addtag(this)\"></p></td>").insertAfter($("#tag-index"));
+  $("<td id=\"tag-div-"+count+"\"><p id=\"tag-"+count+"\" class=\"inline\" onclick=\"addtag(this)\" title=\"Click to edit\"></p></td>").insertAfter($("#tag-index"));
+  $("<td id=\"lvmtag-div-"+count+"\"><input type=\"checkbox\" id=\"lvmtag-"+count+"\" checked></td>").insertAfter($("#lvmtag-index"));
   $("td p").addEffect();
   for (var i=1; i<=count; i=i+1){
-      var part_id = "#length-div-"+i;
-      var info_id = "#info-div-"+i;
-      var tag_id = "#tag-"+i;
-      $(info_id).html(count-i+1);
-      $(part_id).html(calculate(width));
-      $(tag_id).html("Disk-"+(count-i+1));
-      $(part_id).css("margin","1%");
+      $("#info-div-"+i).html(count-i+1);
+      $("#length-div-"+i).html(calculate(width));
+      if ( i > 1){
+          $("#tag-"+i).html("Disk-"+(count-i+1));
+      }
+      $("#length-div-"+i).css("margin","1%");
   }
   $("#part-info-list td").each(function(){
       $(this).css("width", 80/count+"%");
@@ -127,17 +162,30 @@ function add_partition(){
   }
 }
 
-function collect_diskinfo(){
-    values = [];
-    tags = [];
-    selected = [];
+function save_partition(){
+    $("#delete-raid-btn").button("option", "disabled",false);
+    var values=[],tags=[],lvmtags=[];
     $("#part-list").find("td").each(function(){
 		values.push($(this).text());
 	});
     $("#tag-list").find("td p").each(function(){
 		tags.push($(this).text());
-        selected.push(0);
 	});
+    $("#lvmtag-list").find("td input[type=checkbox]").each(function(){
+		lvmtags.push($(this).is(":checked"));
+	});
+    $("#raidpartid-"+current_index).html(values.length-1);
+    raid_arrays[current_index]["partitions"]=[];
+    for (var i = 0; i < values.length - 1; i = i + 1){
+        raid_arrays[current_index]["partitions"].push({"size":values[i], "label":tags[i], "lvm":lvmtags[i]});   
+        disk_arrays[tags[i]]=values[i]     
+    } 
+    disk_arrays["Unused"]=values[values.length-1]   
+    $("#save-part-btn").button("option", "disabled",true);
+    console.log(JSON.stringify(raid_arrays,null,2))
+    console.log(JSON.stringify(disk_arrays,null,2))
+    $("#save-part-btn").button("option", "disabled",true);
+
 }
 
 
@@ -171,7 +219,6 @@ function lvm_partition(){
 }
 
 function raid_partition(raidtype){
-    raid_minpartition(raidtype)
     var raidcount = minpartition;
     if ( count < raidcount ){
         while( count < raidcount){
@@ -187,7 +234,7 @@ function raid_partition(raidtype){
 
 function addtag(element){
      var index = $(element).attr("id").split("-")[1]
-     var replaceWith = $('<input type="text" id="temp-'+index+'" style="display:inline"/>');
+     var replaceWith = $('<input type="text" id="temp-'+index+'" style="display:inline; "/>');
      $(element).hide();
      $(element).after(replaceWith);
      if ($(element).text() != "click to edit"){
