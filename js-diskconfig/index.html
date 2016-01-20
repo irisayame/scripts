@@ -82,7 +82,7 @@
                     <div id="lvg-div"> 
                         <h2>Logical Volume Group</h2>
                         <button id="add-vg-btn" onclick="add_vg()">Add Volume Group</button>
-                        <button id="delete-vg-btn" onclick="delete_vg()">Remove Volume Group</button>
+                        <button id="delete-vg-btn" onclick="delete_vg()" title="delete the last VG">Remove Volume Group</button>
                         <button id="add-vol-btn" onclick="add_vol()">Add Volume</button>
                         <button id="delete-vol-btn" onclick="delete_vol()">Delete Volume</button>
                         <br></br>
@@ -118,39 +118,10 @@
             </div>
         </div>
 <script type="text/javascript">
-$("#disk-size").html(disksize);
-$("#outer-div").css("width", totalwidth);
-$("#div-1").css("width", totalwidth);
-$("#info-div-1").html("1");
-$("#length-div-1").html(calculate(totalwidth));
-$("td p").addEffect();
-$( "#add-part-btn" ).button({disabled: false});
-$( "#delete-part-btn" ).button({disabled: true});
-$( "#save-part-btn" ).button({disabled: true});
-$( "#delete-raid-btn" ).button({disabled: true});
-
 $(function(){
     $( "button" ).button();
-    $( "#radio" ).buttonset();
-    $('input[type=radio]').change(function(){
-        var type = $(this).val();
-        $(".radio-div").hide();
-        $("#"+type+"-div").show();
-        $("#partition-group").show()
-        if(type == "logical"){
-            lvm_partition();
-        } else if(type == "raid"){
-            var raidtype = $("option:selected").val();
-            raid_partition(raidtype);
-        }
-         
-    });
-
-    $('select').change(function(){
-        var raidtype = $(this).val();
-        raid_partition(raidtype);
-    });
 })
+
 </script>
     </body>
 </html>

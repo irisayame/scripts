@@ -21,7 +21,7 @@ $(function ()
                 get_lvm_configs();
                 get_fs_labels();
                 show_fs_table();
-               // raphael();
+                raphael();
             }else if (currentIndex == 3){
                 get_fs_configs()
                 generate();

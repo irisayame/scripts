@@ -5,7 +5,8 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
         total = 0,
         height = 50,
         prewidth = cx,
-        start = 0.3;
+        cindex = 1,
+        cdelta = 200/(labels.length+2);
     function sector(cx, cy, prewidth, width, height, params) {
         var x1 = cx + prewidth,
             y1 = cy;
@@ -15,10 +16,9 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
             var value = values[j];
             var width = totalwidth * value/100;
             var popangle = 90,
-                color = Raphael.hsb(start, .75, 1),
                 ms = 500,
-                bcolor = Raphael.hsb(start, 1, 1);
-            var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: "90-" + bcolor + "-" + color, stroke: stroke, "stroke-width": 3});
+                bcolor = Raphael.rgb(200-cdelta*cindex, 200-cdelta*cindex, 200-cdelta*cindex);            
+            var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: bcolor, stroke: stroke, "stroke-width": 3});;
             var txt = paper.text(cx + prewidth+width/2, cy + height * 1.5, labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": 20});
             var tag = paper.text(cx + prewidth+width/2, cy + height/5, labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 20});
 
@@ -34,8 +34,8 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
             }); 
             chart.push(p);
             chart.push(txt);
-            chart.push(tag)
-            start += .1;
+            chart.push(tag);
+            cindex += 1;
         };
     for (i = 0; i < values.length; i++) {
         process(i);
@@ -52,9 +52,6 @@ function raphael() {
         sizes.push(value)
         values.push(parseInt(value)/1.2);
     });
-    console.log(values)
-    console.log(sizes)
-    console.log(labels)
     $("#holder").empty();
     Raphael("holder", 900, 150).rectChart(10, 10, values, labels, sizes, "#fff");
 }

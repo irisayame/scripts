@@ -19,10 +19,10 @@ table tr td{
 }
 
 .inline{
-	background-color:#fbf9ee;
+	background-color:#D3D3D3;
 }
 
-    .wrap {
+.wrap {
   border: 1px  solid;
   font-size: 0;
   margin-left:150px;
@@ -53,7 +53,6 @@ input{
   max-width: 80px;
   width: auto !important;
   text-align:center;
-  border-radius:4px;
 }
 input[type=checkbox]{
   cursor:pointer;
@@ -67,7 +66,8 @@ input[type=checkbox]{
 .selectable .ui-selected { background: #4682B4; color: white; }
 .selectable .block {background:#C0C0C0}
 .selectable { list-style-type: none; font-size:12px;}
-.selectable li { margin: 3px; padding: 1px; float: left; width: 50px; height: 40px; font-size: 1.2em; text-align: center; }
+.selectable li { margin: 3px; padding: 1px; float: left; width: 50px; height: 40px; font-size: 1.2em; text-align: center;
+  cursor:pointer; }
 .ui-state-default{border:1px solid #121212;background-image:none;}
 .ui-button:hover{background-color:#fff;color:#000}
 .ui-button-disabled:hover {background-color:#e6e6e6;color:#555555}
@@ -81,3 +81,16 @@ select{
     border-radius:4px;
     background-color:#fff;
 }
+
+.hover-div:hover{
+    background-color:rgba(245,245,245,1);
+    }
+.basic-div{
+    background-color:#eeeeee;
+    }
+.highlight-div{
+    background-color:#FFFACD;
+    }
+.highlight-div:hover{
+    background-color:#FFFFE0;
+    }
