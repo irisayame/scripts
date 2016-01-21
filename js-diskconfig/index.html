@@ -28,23 +28,18 @@
                         <h2>RAID Arrays</h2>
                         <button id="add-raid-btn" onclick="add_raid()">Add RAID Array</button>
                         <button id="delete-raid-btn" onclick="delete_raid()">Delete RAID Array</button>
+                        <button id="add-part-btn" onclick="add_partition()">Add Partition</button>
+                        <button id="delete-part-btn" onclick="delete_partition()">Delete Partition</button>
                         <br/><br/>
-                        <table border="1" id="raid-table">
-                            <tr>
-                                <th>No.</th>
-                                <th>Partitions</th>
-                                <th>Primary</th>
-                            </tr>
-                        </table>
+                    
+                        <div id="raid-div">
+                        </div>
+                     
 
-                        <div id="partition-div" style="display:none">
-                            <h3>Partitions of RAID <p id="current-index" style="display:inline"></p></h3>
+                        <div style="display:block">
                             <div>Block Count:<span id="count-block">0</span></div>
                             <div>Disk Size (GB):<span id="disk-size"></span></div>
                             <br/>
-                            <button id="add-part-btn" onclick="add_partition()">Add Partition</button>
-                            <button id="delete-part-btn" onclick="delete_partition()">Delete Partition</button>
-                            <button id="save-part-btn" onclick="save_partition()">Save Current Partition</button>
                             <br/>
                             <br/>
                             <div id="outer-div" class="wrap">
@@ -53,23 +48,23 @@
                                 </div>
                             </div>
                             <br/>
-                            <div id="part-table">
-                                <table border="1">
-                                    <tr id="part-info-list">
-                                        <th id="info-index">Partition</th>
-                                        <td id="info-div-1">Unused</td>
+                            <div>
+                                <table border="1" id="block-table">
+                                    <tr id="number-row">
+                                        <th id="number-th">No.</th>
+                                        <td id="number-col-1">Unused</td>
                                     </tr>
-                                    <tr id="part-list">
-                                        <th id="length-index">Size (GB)</th>
-                                        <td id="length-div-1"></td>
+                                    <tr id="part-size-row">
+                                        <th id="size-th">Size (GB)</th>
+                                        <td id="size-col-1"></td>
                                     </tr>
-                                    <tr id="tag-list">
-                                        <th id="tag-index">Tag</th>
-                                        <td id="tag-div-1">Unused</td>
+                                    <tr id="raidindex-row">
+                                        <th id="raidindex-th">RAID</th>
+                                        <td id="raidindex-col-1">Unsigned</td>
                                     </tr>
-                                    <tr id="lvmtag-list">
-                                        <th id="lvmtag-index">Use LVM</th>
-                                        <td id="lvmtag-div-1"></td>
+                                    <tr id="partindex-row">
+                                        <th id="partindex-index">Partition</th>
+                                        <td id="partindex-col-1">Unsigned</td>
                                     </tr>
                                 </table>
                             </div>

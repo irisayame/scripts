@@ -4,9 +4,9 @@ remainwidth=totalwidth;
 initwidth=20;
 minwidth=0;
 minpartition=1;
-maxpartition=5+1//totalwidth/minwidth;
+maxpartition=10;//totalwidth/minwidth;
 disksize=120;
-bccolor=808080;
+bccolor=999999;
 
 disk_arrays={};
 raid_arrays=[];
@@ -17,8 +17,8 @@ filesystems=[];
 current_index = 0; // raid current index
 raid_index = 0; // next raid index to create
 current_part_index = 0;
-partition_index = [];
-
+partition_index = []; // store the next partition index to create of every raid
+block_index = [""];
 max_raids = 4;
 
 function printout(){
@@ -41,7 +41,7 @@ function add_raid(){
         primary = true;
         checked="checked";
     }
-    var raidnode = $('<div id="raiddiv-'+current_index+'" style="margin:0 0 20px 20px;border-radius:10px; padding:5%" class="hover-div"><span style="width:10%;font-size:1.5em;float:left;font-weight:bold;padding:1%">RAID '+(raid_index+1)+'</span><div style="display:inline-block;float:left;vertical-align:top;margin-top:15px"><label for="primary">Primary</label><input type="checkbox" name="primary" '+checked+' /></div></div>');
+    var raidnode = $('<div id="raiddiv-'+current_index+'" style="margin:0 0 20px 20px;border-radius:10px; padding:5%" class="hover-div"><span style="width:10%;font-size:1.5em;float:left;font-weight:bold;padding:1%">RAID '+(raid_index+1)+'</span><div style="display:inline-block;float:left;vertical-align:top;margin-top:15px"><label for="primary">Primary</label><input type="radio" name="primary" '+checked+' /></div></div>');
     $("#raid-div").append(raidnode);
 
     var tablenode = $('<table border="1" style="width:60%;"><tr><th>No.</th><th>Label</th><th>Size</th><th>Use LVM</th></tr><tbody id="parttable-'+current_index+'"></tbody></table>');
@@ -54,7 +54,7 @@ function add_raid(){
         current_part_index = partition_index[current_index]-1;
         $(".hover-div").removeClass("highlight-div");
         $(this).addClass("highlight-div");
-        if (partition_index[current_index] <= 1){
+        if (partition_index[current_index] <= 0){
             $("#delete-part-btn").button("option", "disabled", true);
         } else{
             $("#delete-part-btn").button("option", "disabled", false);
@@ -72,19 +72,20 @@ function add_raid(){
 function delete_raid(){
     if (raid_index <= 1){
         $("#delete-raid-btn").button("option", "disabled",true);
+        $("#add-part-btn").button("option", "disabled",true);
     }
     $("#add-raid-btn").button("option", "disabled",false);
     raid_index = raid_index - 1;
     $("#raiddiv-"+raid_index).remove();
+    $("#raiddiv-"+(raid_index - 1)).click();
 }
 
 
 function add_partition(){
     $("#delete-part-btn").button("option", "disabled", false);
     current_part_index = partition_index[current_index];
-    $("#parttable-"+current_index).append('<tr class="partrow-'+current_part_index+'"><td>'+(current_part_index+1)+'</td><td id="label-div-'+current_part_index+'"><p id="label-'+current_part_index+'" class="inline" onclick="addtag(this)" title="Click to edit">Partition-'+(current_part_index+1)+'</p></td><td id="size-'+current_part_index+'"></td><td id="lvmlabel-'+current_part_index+'"><input type="checkbox" name="lvmlabel" checked></td></tr>');
+    $("#parttable-"+current_index).append('<tr class="partrow-'+current_part_index+'"><td>'+(current_part_index+1)+'</td><td><p id="label-p-'+current_part_index+'" class="label-'+current_part_index+'" class="inline" onclick="addtag(this)" title="Click to edit">RAID-'+(parseInt(current_index)+1)+', Partition-'+(current_part_index+1)+'</p></td><td class="size-'+current_part_index+'"></td><td class="lvmlabel-'+current_part_index+'"><input type="checkbox" name="lvmlabel" checked></td></tr>');
     partition_index[current_index] = current_part_index+1;
-
     $("td p").addEffect();
     add_part_resizable();
 }
@@ -98,6 +99,9 @@ function delete_partition(){
         return;
     }
     $("#parttable-"+current_index+" .partrow-"+current_part_index).remove();
+
+    delete_part_resizable();
+
     current_part_index = current_part_index - 1;
     partition_index[current_index] = partition_index[current_index] - 1;
 }
@@ -113,17 +117,31 @@ function loadresize(){$(function() {
     handles: 'e',
     resize: function(e, ui) {
       var div_id = $(this).attr("id");
-      var div_number = div_id.split("-")[1];
-      var length_div_id = "length-"+div_id;
-      var next_length_div_id = "length-div-"+(div_number-1);
+      var div_index = div_id.split("-")[1];
+      var next_index = parseInt(div_index) + 1;
+      if (next_index > count){next_index = 1;}
+      var size_td_id = "size-col-"+div_index;
+      var next_size_td_id = "size-col-"+next_index;
 
       var next = ui.element.next();
       var divTwoWidth = totalWidth - ui.element.outerWidth();
       next.width(divTwoWidth);
-      //$("#info-"+div_id).html(count-div_number+1);
-      //$("#"+length_div_id).html(calculate(ui.element.outerWidth()));
-      //$("#info-div-"+(div_number-1)).html(count-div_number+2);
-      //$("#"+next_length_div_id).html(calculate(divTwoWidth));
+      //$("#debug").html("current ele id: "+div_index+", next index: "+next_index+", current width: "+ui.element.outerWidth()+", totalWidth: "+totalwidth);
+      $("#"+size_td_id).html(calculate(ui.element.outerWidth()));
+      $("#"+next_size_td_id).html(calculate(divTwoWidth));
+
+      /* update size column of partition table inside raid div */
+      var raidindex = block_index[div_index-1].split("-")[0];
+      var partindex = block_index[div_index-1].split("-")[1];
+      //$("#debug").html("current ele id: "+div_index+", next index: "+next_index+", current width: "+ui.element.outerWidth()+", totalWidth: "+totalwidth+", raidindex: "+raidindex+", partindex: "+partindex+", size: "+calculate(width));
+      $("#parttable-"+raidindex+" .size-"+partindex).html(calculate(ui.element.outerWidth()));
+
+      if (next_index <= 1){return;}
+      var nextraidindex = block_index[next_index-1].split("-")[0];
+      var nextpartindex = block_index[next_index-1].split("-")[1];
+      //$("#debug2").html("current ele id: "+div_index+", next index: "+next_index+", current width: "+ui.element.outerWidth()+", totalWidth: "+totalwidth+", nextraidindex: "+nextraidindex+", nextpartindex: "+nextpartindex+", nextsize: "+calculate(divTwoWidth));
+      $("#parttable-"+nextraidindex+" .size-"+nextpartindex).html(calculate(divTwoWidth));
+
     },
     start: function(e, ui) {
       var next = ui.element.next();
@@ -134,8 +152,45 @@ function loadresize(){$(function() {
   });
 });};
 
-//TODO
-function delete_partition11(){
+
+function add_part_resizable(){
+  remainwidth = $("#div-1").width();
+  //$("#debug").html("current raid index: "+current_index+", current part index: "+current_part_index+", totalwidth: "+totalwidth);
+  bccolor = bccolor-111111;
+  if (count == maxpartition-1){
+      $("#add-part-btn").button("option","disabled",true);
+  }
+  if (count >= maxpartition){
+      return;
+  }
+  count = count + 1; /* count increment 1 here !!!*/
+  width = initwidth;//totalwidth/count;
+  if (count > minpartition){
+      $("#delete-part-btn").button("option","disabled",false);
+  }
+  /* add new block and initial it. */
+  var newnode = $('<div id="div-'+count+'" class="resizable resizable1 ui-resizable" style="top 0px; left:0px;height:50px;"><div class="ui-resizable-handle ui-resizable-e" style="z-index:1000;"></div></div>');
+  newnode.insertBefore($("#div-1"));
+  $("#div-"+count).css("width",width);
+  $("#div-"+count).css("background-color","#"+bccolor);
+
+  /* adjust the size of block on the right edge */
+  remainwidth = remainwidth-width;
+  $("#div-1").css("width",remainwidth);
+
+  /* enable the resizable */
+  $(window).load(loadresize());
+
+  $("#div-1").empty();
+  $("#count-block").html(count);
+
+  refresh_add_block_table(width);
+  $("#parttable-"+current_index+" .size-"+current_part_index).html(calculate(width)); /*refresh partition table inside raid div */
+  block_index.push(current_index+"-"+current_part_index);
+  
+}
+
+function delete_part_resizable(){
   bccolor = bccolor+111111;
   if (count == minpartition+1){
       $("#delete-part-btn").button("option", "disabled",true);
@@ -146,70 +201,52 @@ function delete_partition11(){
   if (count <= maxpartition){
       $("#add-part-btn").button("option","disabled",false);
   }
-  width = totalwidth/(count-1);
-  $("#div-"+count).remove();
-  $(".resizable").css("width",width);
-  $(window).load(loadresize());
 
-  $("#length-div-"+count).remove();
-  $("#info-div-"+count).remove();
-  $("#tag-div-"+count).remove();
-  $("#lvmtag-div-"+count).remove();
-
+  var blockindex = jQuery.inArray(current_index+"-"+current_part_index, block_index);
+  var sparewidth = $("#div-"+(blockindex+1)).width();
+  remainwidth = $("#div-1").width();
+  remainwidth += sparewidth;
+  $("#div-"+(blockindex+1)).remove();
+  $("#div-1").css("width",remainwidth);
+  $("#size-col-1").html(calculate(remainwidth));
   count = count - 1;
   $("#count-block").html(count);
-  for (var i=1; i<=count; i=i+1){
-      $("#info-div-"+i).html(count-i+1);
-      $("#length-div-"+i).html(calculate(width));
-      $("#length-div-"+i).css("margin","1%");
-      if (i > 1){
-          $("#tag-"+i).html("Disk-"+(count-i+1));
-      }
-  }
 
-  $("#part-info-list td").each(function(){
-    $(this).css("width", 80/count+"%");
-  });
+  /* refresh block table */
+  refresh_delete_block_table(blockindex+1);
+
+  block_index.splice(blockindex, 1);
  
 }
-//TODO
-function add_part_resizable(){
-  bccolor = bccolor-111111;
-  if (count == maxpartition-1){
-      $("#add-part-btn").button("option","disabled",true);
-  }
-  if (count >= maxpartition){
-      return;
-  }
-  count = count + 1;
-  width = initwidth//totalwidth/count;
-  if (count > minpartition){
-      $("#delete-part-btn").button("option","disabled",false);
-  }
-  var newnode = $('<div id="div-'+count+'" class="resizable resizable1 ui-resizable" style="top 0px; left:0px;height:50px;"><div id="split-'+count+'" class="ui-resizable-handle ui-resizable-e" style="z-index:1000;"></div></div>');
-  newnode.insertBefore($("#div-1"));
-  $("#div-"+count).css("width",width);
-  remainwidth = remainwidth-width;
-  $("#div-1").css("width",remainwidth);
-  $("#div-"+count).css("background-color","#"+bccolor);
-  $(window).load(loadresize());
-
-  $("#div-1").empty();
-  $("#count-block").html(count);
-
-/*  for (var i=1; i<=count; i=i+1){
-      $("#info-div-"+i).html(count-i+1);
-      $("#length-div-"+i).html(calculate(width));
-      if ( i > 1){
-          $("#tag-"+i).html("Disk-"+(count-i+1));
-      }
-      $("#length-div-"+i).css("margin","1%");
-  }
-  $("#part-info-list td").each(function(){
-      $(this).css("width", 80/count+"%");
-  });
-*/
+function refresh_add_block_table(width){
+  $('<td id="number-col-'+count+'">'+(count-1)+'</td>').insertBefore("#number-col-1");
+  $('<td id="size-col-'+count+'">'+calculate(width)+'</td>').insertBefore("#size-col-1");
+  $('<td id="raidindex-col-'+count+'">RAID-'+(parseInt(current_index)+1)+'</td>').insertBefore("#raidindex-col-1");
+  $('<td id="partindex-col-'+count+'">Partition-'+(current_part_index+1)+'</td>').insertBefore("#partindex-col-1");
+  console.log("div-"+count+" title:"+" == label of ("+current_index+", "+current_part_index+")");
+  $('#div-'+count).attr("title",$("#parttable-"+current_index+" .label-"+current_part_index).html() )
+  $("#number-col-1").html(count);
 }
+
+function refresh_delete_block_table(blockindex){
+  $("#number-col-"+blockindex).remove();
+  $("#size-col-"+blockindex).remove();
+  $("#raidindex-col-"+blockindex).remove();
+  $("#partindex-col-"+blockindex).remove();
+  $("#number-col-1").html(count);
+   
+  for (var i = blockindex; i < count+2; i++){
+    $("#number-col-"+i).html($("#number-col-"+i).html()-1);
+    $("#number-col-"+i).attr("id","number-col-"+(i-1));
+    $("#size-col-"+i).attr("id","size-col-"+(i-1));
+    $("#raidindex-col-"+i).attr("id","raidindex-col-"+(i-1));
+    $("#partindex-col-"+i).attr("id","partindex-col-"+(i-1));
+    $("#div-"+i).attr("id","div-"+(i-1));
+    $("#div-"+i).css("color",bccolor);
+  }
+  
+}
+
 //TODO
 function get_raid_info(){
     $("#delete-raid-btn").button("option", "disabled",false);
@@ -266,6 +303,7 @@ $(function(){
     $("#disk-size").html(disksize);
     $("#outer-div").css("width", totalwidth);
     $("#div-1").css("width", totalwidth);
+    $("#div-1").attr("title", "Unused");
     $("#number-col-1").html("1");
     $("#size-col-1").html(calculate(totalwidth));
    // $("td p").addEffect();
