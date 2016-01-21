@@ -14,7 +14,7 @@ $(function ()
         {
             $(".wizard.vertical > .content").css("overflow","auto");
             if (currentIndex == 1){
-                save_partition();
+                get_raid_configs();
                 get_pvg_labels();
             }
             else if(currentIndex == 2){

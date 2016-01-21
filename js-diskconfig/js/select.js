@@ -5,7 +5,7 @@ function get_pvg_labels(){
     for (var i in raid_arrays){
         for (var pi in raid_arrays[i]["partitions"]){
             if (raid_arrays[i]["partitions"][pi]["lvm"] == true){
-                pvglabels.push(raid_arrays[i]["partitions"][pi]["label"]);
+                pvglabels.push(raid_arrays[i]["partitions"][pi]["partition_label"]);
                 pvgsizes.push(raid_arrays[i]["partitions"][pi]["size"]);
                 selected.push(0);
             }
@@ -167,7 +167,7 @@ function get_fs_labels(){
     for (var i in raid_arrays){
         for (var pi in raid_arrays[i]["partitions"]){
             if (raid_arrays[i]["partitions"][pi]["lvm"] == false){
-                fslabels.push(raid_arrays[i]["partitions"][pi]["label"]);
+                fslabels.push(raid_arrays[i]["partitions"][pi]["partition_label"]);
                 fssizes.push(raid_arrays[i]["partitions"][pi]["size"]);
             }
         }
