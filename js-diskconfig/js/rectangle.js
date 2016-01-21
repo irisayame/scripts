@@ -19,7 +19,7 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
                 ms = 500,
                 bcolor = Raphael.rgb(200-cdelta*cindex, 200-cdelta*cindex, 200-cdelta*cindex);            
             var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: bcolor, stroke: stroke, "stroke-width": 3});;
-            var txt = paper.text(cx + prewidth+width/2, cy + height * 1.5, labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": 20});
+            var txt = paper.text(cx + prewidth+width/2, cy + height * 1.5, labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": "0.8em" });
             var tag = paper.text(cx + prewidth+width/2, cy + height/5, labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 20});
 
            prewidth = prewidth + width;
@@ -48,10 +48,15 @@ function raphael() {
     var sizes = [];
     var labels = [];
     $.each(disk_arrays,function(key,value){
-        labels.push(key)
-        sizes.push(value)
-        values.push(parseInt(value)/1.2);
+        if (key != "Unused"){
+            labels.push(key)
+            sizes.push(value)
+            values.push(parseInt(value)/1.2);
+        }
     });
+    labels.push("Unused")
+    sizes.push(disk_arrays["Unused"])
+    values.push(parseInt(disk_arrays["Unused"])/1.2);
     $("#holder").empty();
     Raphael("holder", 900, 150).rectChart(10, 10, values, labels, sizes, "#fff");
 }

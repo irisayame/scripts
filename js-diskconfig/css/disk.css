@@ -15,10 +15,14 @@ table tr th{
 }
 table tr td{
     text-align:center;
+    min-height:27px;
+    height:27px;
 }
 
 .inline{
 	background-color:#D3D3D3;
+    display:inline;
+    padding:0 1%;
 }
 
 .wrap {
@@ -38,7 +42,7 @@ table tr td{
   right: -5px;
   top: 0;
   bottom: 0;
-  background-color: white;
+  background-color: #B0E0E6;
 }
 p{
   margin: 2px;

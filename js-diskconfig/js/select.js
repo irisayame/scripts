@@ -25,7 +25,7 @@ function get_selection(){
 function add_vol(){
     $("#delete-vol-btn").button("option", "disabled", false);
     current_vol_index = vol_index[current_vg_index];
-    $("#vg-table-"+current_vg_index).append('<tr class="volrow-'+current_vol_index+'"><td>'+(current_vol_index+1)+'</td><td><input type="text" name="label" value="LVM-'+(current_vol_index+1)+'" title="cannot be same with Physical Volume Partition Label"></td><td><input type="text" name="size" value="1"/></td></tr>');
+    $("#vg-table-"+current_vg_index).append('<tr class="volrow-'+current_vol_index+'"><td>'+(current_vol_index+1)+'</td><td><p type="text" id="vollabel-'+current_vol_index+'" class="inline" onclick="addtag(this)" title="click to edit cannot be same with Physical Volume Partition Label">VG'+current_vg_index+'-LVM'+(current_vol_index+1)+'</p></td><td><input type="number" name="size" value="1"/></td></tr>');
     vol_index[current_vg_index] = current_vol_index+1;
 }
 
@@ -144,16 +144,10 @@ function get_lvm_configs(){
         });
 
         for (var j = 0; j < vol_index[i]; j = j + 1){
-            // loop over volume in every VG table
+            /* loop over volume in every VG table */
             var lvm = {"size":"auto","label":null};
-            $("#vg-table-"+i+" .volrow-"+j+" input[name=label]").each(function(){
-                // only one item
-                lvm["label"] = $(this).val();
-            });
-            $("#vg-table-"+i+" .volrow-"+j+" input[name=size]").each(function(){
-                // only one item
-                lvm["size"] = $(this).val();
-            });
+            lvm["label"] =  $("#vg-table-"+i+" .volrow-"+j+" p").html();
+            lvm["size"] = $("#vg-table-"+i+" .volrow-"+j+" input[name=size]").val();
             lvg["logical_volumes"].push(lvm);
         }        
         lvm_groups.push(lvg);

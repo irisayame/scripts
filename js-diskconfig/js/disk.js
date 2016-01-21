@@ -20,6 +20,7 @@ current_part_index = 0;
 partition_index = []; // store the next partition index to create of every raid
 block_index = [""];
 max_raids = 4;
+selected = [];
 
 function printout(){
     console.log("current_index: "+current_index);
@@ -74,6 +75,10 @@ function delete_raid(){
         $("#delete-raid-btn").button("option", "disabled",true);
         $("#add-part-btn").button("option", "disabled",true);
     }
+    while (current_part_index >= 0){  
+        $("#delete-part-btn").click();
+    }
+
     $("#add-raid-btn").button("option", "disabled",false);
     raid_index = raid_index - 1;
     $("#raiddiv-"+raid_index).remove();
@@ -91,7 +96,7 @@ function add_partition(){
     */
     $("#delete-part-btn").button("option", "disabled", false);
     current_part_index = partition_index[current_index];
-    $("#parttable-"+current_index).append('<tr class="partrow-'+current_part_index+'"><td>'+(current_part_index+1)+'</td><td><p id="label-p-'+current_part_index+'" class="label-'+current_part_index+'" class="inline" onclick="addtag(this)" title="Click to edit">R'+(parseInt(current_index)+1)+'P'+(current_part_index+1)+'</p></td><td class="size-'+current_part_index+'"></td><td class="lvmlabel-'+current_part_index+'"><input type="checkbox" name="lvmlabel" checked></td></tr>');
+    $("#parttable-"+current_index).append('<tr class="partrow-'+current_part_index+'"><td>'+(current_part_index+1)+'</td><td><p id="label-p-'+current_part_index+'" class="label-'+current_part_index+' inline" onclick="addtag(this)" title="Click to edit">R'+(parseInt(current_index)+1)+'P'+(current_part_index+1)+'</p></td><td class="size-'+current_part_index+'"></td><td class="lvmlabel-'+current_part_index+'"><input type="checkbox" name="lvmlabel" checked></td></tr>');
     partition_index[current_index] = current_part_index+1;
     $("td p").addEffect();
     add_part_resizable();
@@ -233,7 +238,7 @@ function refresh_add_block_table(width){
   $('<td id="partindex-col-'+count+'">Partition-'+(current_part_index+1)+'</td>').insertBefore("#partindex-col-1");
   console.log("div-"+count+" title:"+" == label of ("+current_index+", "+current_part_index+")");
   $('#div-'+count).attr("title",$("#parttable-"+current_index+" .label-"+current_part_index).html() )
-  $("#number-col-1").html(count);
+  //$("#number-col-1").html(count);
 }
 
 function refresh_delete_block_table(blockindex){
@@ -241,7 +246,7 @@ function refresh_delete_block_table(blockindex){
   $("#size-col-"+blockindex).remove();
   $("#raidindex-col-"+blockindex).remove();
   $("#partindex-col-"+blockindex).remove();
-  $("#number-col-1").html(count);
+  //$("#number-col-1").html(count);
    
   for (var i = blockindex; i < count+2; i++){
     $("#number-col-"+i).html($("#number-col-"+i).html()-1);
@@ -282,7 +287,7 @@ $.fn.addEffect = function() {
 function addtag(element){
      console.log($(element).attr("id"));
      var index = $(element).attr("id").split("-")[1]
-     var replaceWith = $('<input type="text" id="temp-'+index+'" style="display:inline; "/>');
+     var replaceWith = $('<input type="text" size="50" id="temp-'+index+'" style="display:inline;"/>');
      $(element).hide();
      $(element).after(replaceWith);
      if ($(element).text() != "click to edit"){
@@ -304,9 +309,9 @@ $(function(){
     $("#outer-div").css("width", totalwidth);
     $("#div-1").css("width", totalwidth);
     $("#div-1").attr("title", "Unused");
-    $("#number-col-1").html("1");
+  //  $("#number-col-1").html("Unused");
+    $("#div-1").css("background-color", "#FFFFFF");
     $("#size-col-1").html(calculate(totalwidth));
-   // $("td p").addEffect();
     $( "#add-part-btn" ).button({disabled: true});
     $( "#delete-part-btn" ).button({disabled: true});
     $( "#delete-raid-btn" ).button({disabled: true});
