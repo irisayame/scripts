@@ -25,8 +25,13 @@ function get_selection(){
 function add_vol(){
     $("#delete-vol-btn").button("option", "disabled", false);
     current_vol_index = vol_index[current_vg_index];
-    $("#vg-table-"+current_vg_index).append('<tr class="volrow-'+current_vol_index+'"><td>'+(current_vol_index+1)+'</td><td><p type="text" id="vollabel-'+current_vol_index+'" class="inline" onclick="addtag(this)" title="click to edit cannot be same with Physical Volume Partition Label">VG'+current_vg_index+'-LVM'+(current_vol_index+1)+'</p></td><td><input type="number" name="size" value="1"/></td></tr>');
+    $("#vg-table-"+current_vg_index).append('<tr class="volrow-'+current_vol_index+'"><td>'+(current_vol_index+1)+'</td><td><p type="text" id="vollabel-'+current_vol_index+'" class="inline" onclick="addtag(this)" title="click to edit cannot be same with Physical Volume Partition Label">VG'+(current_vg_index+1)+'-LVM'+(current_vol_index+1)+'</p></td><td><input type="number" name="size" value="'+minsize+'" min="'+minsize+'" title="size of volume (>'+minsize+'G)"/></td></tr>');
     vol_index[current_vg_index] = current_vol_index+1;
+    $("input[type=number]").change(function(){
+        if ($(this).val() ){
+        }
+        
+    });
 }
 
 function delete_vol(){
@@ -253,6 +258,7 @@ $(function() {
     pvgstatus = [];
     fsstatus = {};
     maxpvg = 5;
+    minsize = 4;
     current_vg_index = 0;
     current_vol_index = 0;
     vol_index=[];
