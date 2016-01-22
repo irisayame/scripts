@@ -154,6 +154,17 @@ function get_lvm_configs(){
     }
 }
 
+function save_pvg_status(){
+    pvgstatus = [];
+    for (var i = 0; i < index; i = i + 1){
+        var selected_labels = [];
+        $("#select-"+i+" .ui-selected").each(function(){
+            selected_labels.push($(this).attr("value"));
+        });
+        pvgstatus.push(selected_labels);
+    }    
+}
+
 function get_fs_labels(){
     fslabels = [];
     fssizes = [];
@@ -188,9 +199,7 @@ function get_fs_configs(){
 
 function show_fs_table(){
     var tbody = $("#filesystem-table");
-    if (tbody.html() != ""){
-        return;
-    }
+    tbody.empty();
     var fsoption = "<option value=\"\">Select...</option>";
     for (var i in fs_types){
         fsoption += "<option value=\""+fs_types[i]+"\">"+fs_types[i]+"</option>";
@@ -209,13 +218,30 @@ function show_fs_table(){
     $(".mountpoint").each(function(){
         $(this).append(mpoption);
     });
-
     $(".mountpoint").change(function() {
         prevalue = mp_oldvalues[$(this).attr("id")];
         mp_oldvalues[$(this).attr("id")] = $(this).val();
         $('option[value="'+ prevalue+'"]').removeAttr("disabled");
         $('option[value="'+ $(this).val()+'"]').attr("disabled", "disabled");
+        $(this).find("option:selected").removeAttr("disabled");
         
+    });
+    /* set the option chosen already */     
+    $("#filesystem-table").find("tr").each(function(){
+        if ( $(this).find("td:nth-child(2)").text() in fsstatus){
+            var fs_type = fsstatus[$(this).find("td:nth-child(2)").text()]["fs_type"];
+            var mount_point = fsstatus[$(this).find("td:nth-child(2)").text()]["mount_point"];
+            $(this).find("td:nth-child(4) select").val(fs_type);
+            $(this).find("td:nth-child(5) select").val(mount_point);   
+        }
+	});
+    /* disable the selected option */
+    $(".mountpoint").each(function(){
+        if ( $(this).val() != ""){
+            $('option[value="'+$(this).val()+'"]').attr("disabled", "disabled");
+            $(this).find("option:selected").removeAttr("disabled");
+        }    
+
     });
 }
 
@@ -224,6 +250,8 @@ $(function() {
     index = 0; // vg index
     pvglabels = [];
     pvgsizes = [];
+    pvgstatus = [];
+    fsstatus = {};
     maxpvg = 5;
     current_vg_index = 0;
     current_vol_index = 0;

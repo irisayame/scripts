@@ -3,6 +3,45 @@ function generate(){
     $("#json-field").html(JSON.stringify(diskconfig,null,2));
    }
 
+
+function refresh_lvm(){
+    $("#pvg-label-div").children().each(function(){
+        var selectnode = $(this).find(".selectable");
+        selectnode.empty();
+        var vg_index = selectnode.attr("id").split("-")[1];
+        for (var i = 0; i < pvglabels.length; i = i + 1){
+           selectnode.append($('<li id="vg-'+vg_index+'-option-'+i+'" class="ui-widget-content option-'+i+'" value="'+pvglabels[i]+'">'+pvglabels[i]+' ('+pvgsizes[i]+'G)</li>'));
+        }
+    });    
+    for (var i in pvgstatus){
+        var selected_labels = pvgstatus[i];
+        for (var j in selected_labels){
+            $("li").each(function(){
+                if ($(this).attr("value") == selected_labels[j]){
+                    var vg_index = $(this).attr("id").split("-")[1];
+                    var label_index = $(this).attr("id").split("-")[3];
+                    if (vg_index == i){
+                        $(this).addClass( "ui-selected" );  
+                        selected[label_index] = 1;  
+                    } else{
+                        $(this).addClass( "block" );    
+                    }
+                }
+            });
+        }
+    }
+}
+
+function save_fs_status(){
+    fsstatus = {};    
+    $("#filesystem-table").find("tr").each(function(){
+        var fsinfo = {}; 
+        fsinfo["fs_type"] = $(this).find("td:nth-child(4)").find("select").val();
+        fsinfo["mount_point"] = $(this).find("td:nth-child(5)").find("option:selected").val();
+		fsstatus[$(this).find("td:nth-child(2)").text()] = fsinfo;
+	});
+}
+
 $(function ()
 {
     $("#wizard").steps({
@@ -12,19 +51,34 @@ $(function ()
         transitionEffect: "fade",
         onStepChanged: function (event, currentIndex, priorIndex)
         {
-            $(".wizard.vertical > .content").css("overflow","auto");
             if (currentIndex == 1){
                 get_raid_configs();
                 get_pvg_labels();
+                raphael();
+                refresh_lvm();
             }
             else if(currentIndex == 2){
                 get_lvm_configs();
                 get_fs_labels();
                 show_fs_table();
-                raphael();
             }else if (currentIndex == 3){
                 get_fs_configs()
                 generate();
+            }
+        },
+        onStepChanging:function (event, currentIndex, nextIndex){
+            $(".wizard.vertical > .content").css("overflow","auto");
+            if (currentIndex == 0){
+                return true;
+                
+            } else if (currentIndex == 1){
+                save_pvg_status();
+                return true;
+            } else if (currentIndex == 2){
+                save_fs_status();
+                return true;
+            } else if (currentIndex == 3){
+                return true;
             }
         }
     });

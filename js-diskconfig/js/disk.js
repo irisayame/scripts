@@ -22,14 +22,6 @@ block_index = [""];
 max_raids = 4;
 selected = [];
 
-function printout(){
-    console.log("current_index: "+current_index);
-    console.log("raid_index: "+raid_index);
-    console.log("partition_index: "+partition_index);
-    console.log("current_part_index: "+current_part_index);
-
-}
-
 function add_raid(){
     if ( raid_index >= max_raids-1){
         $("#add-raid-btn").button("option", "disabled", true);
@@ -257,7 +249,6 @@ function refresh_delete_block_table(blockindex){
     $("#div-"+i).attr("id","div-"+(i-1));
     $("#div-"+i).css("color",bccolor);
   }
-  
 }
 
 function get_raid_configs(){
@@ -309,7 +300,6 @@ $(function(){
     $("#outer-div").css("width", totalwidth);
     $("#div-1").css("width", totalwidth);
     $("#div-1").attr("title", "Unused");
-  //  $("#number-col-1").html("Unused");
     $("#div-1").css("background-color", "#FFFFFF");
     $("#size-col-1").html(calculate(totalwidth));
     $( "#add-part-btn" ).button({disabled: true});
