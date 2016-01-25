@@ -42,9 +42,7 @@ function save_fs_status(){
 	});
 }
 
-$(function (){
-    tooltips = [];
-    
+$(function (){    
     $("#wizard").steps({
         headerTag: "h2",
         bodyTag: "section",
@@ -60,15 +58,18 @@ $(function (){
                 return true;
             } else if (currentIndex == 2){
                 save_fs_status();
-                return ( validate_fs() || (currentIndex > nextIndex));                        
+                if (currentIndex < nextIndex){
+                    return validate_fs();
+                }
+                return true;                        
             } else if (currentIndex == 3){
                 return true;
             }
-            tooltips.empty();
         },
         onStepChanged: function (event, currentIndex, priorIndex)
         {
             $(".validate-error").tooltip("close");
+            $("div .ui-tooltip").remove();
             if (currentIndex == 1){
                 get_raid_configs();
                 get_pvg_labels();

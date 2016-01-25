@@ -99,11 +99,19 @@ select{
     }
 .ui-tooltip {
     font-size: 12px;
-    border-radius:5px;
-    padding:5px;
+    border-radius:2px;
+    padding:2px;
+    color:red;
+    border-color:#666666;
+    border-width:1px;
   }
 .ui-tooltip-content{
 }
-.error{
+.validate-error{
     border-color:red;
+}
+.validate-emphasize{
+    margin-left:5%;
+    font-size:14px;
+    color:red;
 }
