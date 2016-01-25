@@ -42,44 +42,47 @@ function save_fs_status(){
 	});
 }
 
-$(function ()
-{
+$(function (){
+    tooltips = [];
+    
     $("#wizard").steps({
         headerTag: "h2",
         bodyTag: "section",
         stepsOrientation: "vertical",
         transitionEffect: "fade",
-        onStepChanged: function (event, currentIndex, priorIndex)
-        {
-            if (currentIndex == 1){
-                get_raid_configs();
-                get_pvg_labels();
-                raphael();
-                refresh_lvm();
-            }
-            else if(currentIndex == 2){
-                get_lvm_configs();
-                get_fs_labels();
-                show_fs_table();
-            }else if (currentIndex == 3){
-                get_fs_configs()
-                generate();
-            }
-        },
         onStepChanging:function (event, currentIndex, nextIndex){
             $(".wizard.vertical > .content").css("overflow","auto");
-            if (currentIndex == 0){
-                return true;
-                
+            if (currentIndex == 0  ){
+                /* validate RAID */
+                return true;                
             } else if (currentIndex == 1){
                 save_pvg_status();
                 return true;
             } else if (currentIndex == 2){
                 save_fs_status();
-                return true;
+                return ( validate_fs() || (currentIndex > nextIndex));                        
             } else if (currentIndex == 3){
                 return true;
             }
-        }
+            tooltips.empty();
+        },
+        onStepChanged: function (event, currentIndex, priorIndex)
+        {
+            $(".validate-error").tooltip("close");
+            if (currentIndex == 1){
+                get_raid_configs();
+                get_pvg_labels();
+                raphael();
+                refresh_lvm();
+                $("#add-vg-btn").click();
+            } else if(currentIndex == 2){
+                get_lvm_configs();
+                get_fs_labels();
+                show_fs_table();
+            } else if (currentIndex == 3){
+                get_fs_configs();
+                generate();
+            }
+        },
     });
 });

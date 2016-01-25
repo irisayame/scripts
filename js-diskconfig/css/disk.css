@@ -97,3 +97,13 @@ select{
 .highlight-div:hover{
     background-color:#FFFFE0;
     }
+.ui-tooltip {
+    font-size: 12px;
+    border-radius:5px;
+    padding:5px;
+  }
+.ui-tooltip-content{
+}
+.error{
+    border-color:red;
+}

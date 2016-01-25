@@ -7,11 +7,6 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
         prewidth = cx,
         cindex = 1,
         cdelta = 200/(labels.length+2);
-    function sector(cx, cy, prewidth, width, height, params) {
-        var x1 = cx + prewidth,
-            y1 = cy;
-            return paper.rect(x1, y1, width, height, 0).attr(params);
-    };
         process = function (j) {
             var value = values[j];
             var width = totalwidth * value/100;
@@ -19,8 +14,8 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
                 ms = 500,
                 bcolor = Raphael.rgb(200-cdelta*cindex, 200-cdelta*cindex, 200-cdelta*cindex);            
             var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: bcolor, stroke: stroke, "stroke-width": 3});;
-            var txt = paper.text(cx + prewidth+width/2, cy + height * 1.5, labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": "0.8em" });
-            var tag = paper.text(cx + prewidth+width/2, cy + height/5, labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 20});
+            var txt = paper.text(cx + prewidth+width/2, cy + height*1.5 , labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": "20" });
+            var tag = paper.text(cx + prewidth+width/2, cy + height/2 , labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 20});
 
            prewidth = prewidth + width;
            p.mouseover(function () {

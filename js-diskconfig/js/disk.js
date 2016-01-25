@@ -1,26 +1,26 @@
-count=1; // partition resizable count (include Unused)
-totalwidth=600; // remain size
-remainwidth=totalwidth;
-initwidth=20;
-minwidth=0;
-minpartition=1;
-maxpartition=10;//totalwidth/minwidth;
-disksize=120;
-bccolor=999999;
+count=1; /* the number of blocks (include Unused) */
+disksize=120; /* the disk capacity defined in the flavor */
+totalwidth=600; /* the graphic length of the disk allocation bar can be adjusted */
+remainwidth=totalwidth; /* not yet allocated disk size of total capacity */
+initwidth=totalwidth*4/disksize; /* the minimum length of a partition allocated (size=4GB) */
+minwidth=initwidth; /* except for the Unused one */
+minpartition=1; /* at least allocate one partition */
+maxpartition=10; /* at most equals totalwidth/minwidth; TODO */
+bccolor=999999; /* initial graphic color of paritions */
 
-disk_arrays={};
-raid_arrays=[];
-lvm_groups=[];
-fslabels=[];
-fssizes=[];
-filesystems=[];
-current_index = 0; // raid current index
-raid_index = 0; // next raid index to create
-current_part_index = 0;
-partition_index = []; // store the next partition index to create of every raid
-block_index = [""];
-max_raids = 4;
-selected = [];
+disk_arrays={};  /* hold block details */
+raid_arrays=[]; /* hold details of raid partitions */
+lvm_groups=[]; /* hold details of logical volumes */
+fslabels=[]; /* hold labels of partitions need to be assigned with file systems */
+fssizes=[]; /* hold sizes of partitions need to be assigned with file systems */
+filesystems=[]; /* hold details of file systems and mount points */
+current_index = 0; /* raid current index */
+raid_index = 0; /* next raid index to create, equals to the numbers of current allocated raids */
+current_part_index = 0; /* current index of partitions of the current raid */
+partition_index = []; /* hold the next partition index to create of all raids */
+block_index = [""];/*  */
+max_raids = 4; /* the max number of raids could be created, should be adjust later  TODO */
+selected = []; /* mark the raid physical volumes have been selected  */
 
 function add_raid(){
     if ( raid_index >= max_raids-1){
