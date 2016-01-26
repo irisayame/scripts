@@ -49,7 +49,7 @@ function add_vg(){
         return;
     }
     current_vg_index = index;
-    $("#pvg-label-div").append('<div id="vg-'+index+'" style="margin:0 0 20px 20px;border-radius:10px; padding:3%" class="hover-div"><h2>Volume Group '+(index+1)+'</h2><div style="display:inline-block;vertical-align:top;margin-top:15px"><label for="vg-label">Label: </label><input id="vg-label-'+index+'" value="VG-'+(index+1)+'" style="display:inline-block; margin-right:20px"/ ><label>Physical Volume Partition Label:</label></div></div>');
+    $("#pvg-label-div").append('<div id="vg-'+index+'" style="margin:0 0 20px 20px;border-radius:10px; padding:3%" class="hover-div"><h2>Volume Group '+(index+1)+'</h2><div style="display:inline-block;vertical-align:top;margin-top:15px"><label for="vg-label">Label: </label><input id="vg-label-'+index+'" type="text" value="VG-'+(index+1)+'" style="display:inline-block; margin-right:20px"/ ><label>Physical Volume Partition Label:</label></div></div>');
     $("#vg-"+index).append(get_selection());
     var tablenode = $('<table border="1"><tr><th>No.</th><th>Label</th><th>Size(GB)</th></tr><tbody id="vg-table-'+index+'"></tbody></table>');
     $("#vg-"+index).append(tablenode);
@@ -246,7 +246,6 @@ function show_fs_table(){
 }
 
 $(function() {
-    $( "button" ).button();
     index = 0; // vg index
     pvglabels = [];
     pvgsizes = [];
@@ -260,6 +259,8 @@ $(function() {
     fs_types=["ext2", "ext3", "ext4", "xfs", "btrfs"];
     mps=["/root", "/home", "/swp", "/mnt", "/var"];
     mp_oldvalues = {};
+
+    $( "button" ).button();
     $("#delete-vg-btn").button("option","disabled",true);
     $("#add-vol-btn").button("option","disabled",true);
     $("#delete-vol-btn").button("option","disabled",true);

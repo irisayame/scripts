@@ -11,21 +11,35 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
             var value = values[j];
             var width = totalwidth * value/100;
             var popangle = 90,
-                ms = 500,
+                ms = 1000,
                 bcolor = Raphael.rgb(200-cdelta*cindex, 200-cdelta*cindex, 200-cdelta*cindex);            
             var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: bcolor, stroke: stroke, "stroke-width": 3});;
-            var txt = paper.text(cx + prewidth+width/2, cy + height*1.5 , sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": "20" });
-            var tag = paper.text(cx + prewidth+width/2, cy + height/2 , labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 20});
-
+            var txt = paper.text(cx + prewidth+width/2, cy + height*1.5 , sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": "14" });
+            var tag = paper.text(cx + prewidth+width/2, cy + height/2 , labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 12});
+            if ( width < 50 ){
+                txt.rotate(90);
+                tag.rotate(90);
+            }
            prewidth = prewidth + width;
+            
            p.mouseover(function () {
                 p.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
-                txt.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
-                tag.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
+                if ( width < 50 ){
+                    txt.stop().animate({transform: "s1 1.1 " + cx + " " + cy + " r90"}, ms, "elastic");
+                    tag.stop().animate({transform: "s1 1.1 " + cx + " " + cy + " r90"}, ms, "elastic");
+                }else{
+                    txt.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
+                    tag.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
+                }
             }).mouseout(function () {
                 p.stop().animate({transform: ""}, ms, "elastic");
-                txt.stop().animate({transform: ""}, ms, "elastic");
-                tag.stop().animate({transform: ""}, ms, "elastic");
+                if ( width < 50 ){
+                    txt.stop().animate({transform: "r90"}, ms, "elastic");
+                    tag.stop().animate({transform: "r90"}, ms, "elastic");
+                } else{
+                    txt.stop().animate({transform: ""}, ms, "elastic");
+                    tag.stop().animate({transform: ""}, ms, "elastic");
+                }
             }); 
             chart.push(p);
             chart.push(txt);

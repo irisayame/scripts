@@ -1,28 +1,3 @@
-count=1; /* the number of blocks (include Unused) */
-disksize=120; /* the disk capacity defined in the flavor TODO */
-totalwidth=600; /* the graphic length of the disk allocation bar can be adjusted */
-remainwidth=totalwidth; /* not yet allocated disk size of total capacity */
-min_partition_size=4;/* the minimum size of a partition allocated (4GB) */
-initwidth=totalwidth*min_partition_size/disksize; /* the minimum length of a partition allocated (size=4GB) */
-minwidth=initwidth; /* except for the Unused one */
-minpartition=1; /* at least allocate one partition */
-maxpartition=10; /* at most equals totalwidth/minwidth; TODO */
-bccolor=999999; /* initial graphic color of paritions */
-
-disk_arrays={};  /* hold block details */
-raid_arrays=[]; /* hold details of raid partitions */
-lvm_groups=[]; /* hold details of logical volumes */
-fslabels=[]; /* hold labels of partitions need to be assigned with file systems */
-fssizes=[]; /* hold sizes of partitions need to be assigned with file systems */
-filesystems=[]; /* hold details of file systems and mount points */
-current_index = 0; /* raid current index */
-raid_index = 0; /* next raid index to create, equals to the numbers of current allocated raids */
-current_part_index = 0; /* current index of partitions of the current raid */
-partition_index = []; /* hold the next partition index to create of all raids */
-block_index = [""];/*  */
-max_raids = 1; /* the max number of raids could be created, should be adjust later  TODO */
-selected = []; /* mark the raid physical volumes have been selected  */
-
 function add_raid(){
     if ( raid_index >= max_raids-1){
         $("#add-raid-btn").button("option", "disabled", true);
@@ -38,7 +13,7 @@ function add_raid(){
     var raidnode = $('<div id="raiddiv-'+current_index+'" style="margin:0 0 20px 20px;border-radius:10px; padding:5%" class="hover-div"><span style="width:10%;font-size:1.5em;float:left;font-weight:bold;padding:1%">RAID '+(raid_index+1)+'</span><div style="display:inline-block;float:left;vertical-align:top;margin-top:15px"><label for="primary">Primary</label><input type="radio" name="primary" '+checked+' /></div></div>');
     $("#raid-div").append(raidnode);
 
-    var tablenode = $('<table border="1" style="width:60%;"><tr><th>No.</th><th>Label</th><th>Size</th><th>Use LVM</th></tr><tbody id="parttable-'+current_index+'"></tbody></table>');
+    var tablenode = $('<table border="1" style="width:60%;"><tr><th>No.</th><th>Label</th><th>Size (GB)</th><th>Use LVM</th></tr><tbody id="parttable-'+current_index+'"></tbody></table>');
     $("#raiddiv-"+current_index).append(tablenode);
 
     partition_index.push(0);
@@ -137,9 +112,9 @@ function loadresize(){$(function() {
       var next = ui.element.next();
       var divTwoWidth = totalWidth - ui.element.outerWidth();
 
-      if (ui.element.next().attr("id") == "div-1" && divTwoWidth >= minwidth){
+      if (ui.element.next().attr("id") == "div-1" && divTwoWidth >= initwidth){
           $("#add-part-btn").button("option", "disabled", false);
-      } else if (ui.element.next().attr("id") == "div-1" && divTwoWidth < minwidth) {
+      } else if (ui.element.next().attr("id") == "div-1" && divTwoWidth < initwidth) {
           $("#add-part-btn").button("option", "disabled", true);
       }
 
@@ -201,7 +176,7 @@ function add_part_resizable(){
   /* adjust the size of block on the right edge */
   remainwidth = remainwidth-width;
   $("#div-1").css("width",remainwidth);
-  if(remainwidth <= minwidth){
+  if(remainwidth < initwidth){
       $("#add-part-btn").button("option", "disabled",true);
   }
 
@@ -300,6 +275,7 @@ function addtag(element){
     var index = $(element).attr("id").split("-")[1]
     var replaceWith = $('<input type="text" size="50" id="temp-'+index+'" style="display:inline;"/>');
     $(element).hide();
+    $(element).css("color","black");
     $(element).after(replaceWith);
     replaceWith.val($(element).text());
     replaceWith.focus();
@@ -309,6 +285,7 @@ function addtag(element){
            $(element).text(replaceWith.val());
            replaceWith.remove();
            $(element).show();
+           $(element).attr("title","");
         } else{
             replaceWith.remove();
             $(element).show();
@@ -321,6 +298,31 @@ function addtag(element){
  };   
 
 $(function(){
+    count=1; /* the number of blocks (include Unused) */
+    disksize=120; /* the disk capacity defined in the flavor TODO */
+    totalwidth=600; /* the graphic length of the disk allocation bar can be adjusted */
+    remainwidth=totalwidth; /* not yet allocated disk size of total capacity */
+    min_partition_size=4;/* the minimum size of a partition allocated (4GB) */
+    minwidth=totalwidth*min_partition_size/disksize; /* except for the Unused one */
+    initwidth=10*minwidth; /* the minimum length of a partition allocated (size=4GB) */
+    minpartition=1; /* at least allocate one partition */
+    maxpartition=10; /* at most equals totalwidth/minwidth; TODO */
+    bccolor=999999; /* initial graphic color of paritions */
+
+    disk_arrays={};  /* hold block details */
+    raid_arrays=[]; /* hold details of raid partitions */
+    lvm_groups=[]; /* hold details of logical volumes */
+    fslabels=[]; /* hold labels of partitions need to be assigned with file systems */
+    fssizes=[]; /* hold sizes of partitions need to be assigned with file systems */
+    filesystems=[]; /* hold details of file systems and mount points */
+    current_index = 0; /* raid current index */
+    raid_index = 0; /* next raid index to create, equals to the numbers of current allocated raids */
+    current_part_index = 0; /* current index of partitions of the current raid */
+    partition_index = []; /* hold the next partition index to create of all raids */
+    block_index = [""];/*  */
+    max_raids = 1; /* the max number of raids could be created, should be adjust later  TODO */
+    selected = []; /* mark the raid physical volumes have been selected  */
+
     $("#disk-size").html(disksize);
     $("#outer-div").css("width", totalwidth);
     $("#div-1").css("width", totalwidth);

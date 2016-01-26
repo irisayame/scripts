@@ -38,8 +38,8 @@
                      
 
                         <div style="display:block">
-                            <div>Block Count:<span id="count-block">0</span></div>
-                            <div>Disk Size (GB):<span id="disk-size"></span></div>
+                            <div style="display:none;">Block Count:<span id="count-block">0</span></div>
+                            <div style="display:none;">Disk Size (GB):<span id="disk-size"></span></div>
                             <br/>
                             <br/>
                             <br/>
@@ -98,7 +98,7 @@
                         <tr>
                             <th>No.</th>
                             <th>Label</th>
-                            <th>Size</th>
+                            <th>Size (GB)</th>
                             <th>File System</th>
                             <th>Mount Point</th>
                         </tr>
@@ -118,6 +118,7 @@ $(function(){
     $( "button" ).button();
     $("#add-raid-btn").click();
     $("#add-vg-btn").click();
+    $("#raiddiv-0").click();
 })
 
 </script>

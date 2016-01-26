@@ -52,7 +52,7 @@ $(function (){
             $(".wizard.vertical > .content").css("overflow","auto");
             if (currentIndex == 0  ){
                 /* validate RAID */
-                return true;                
+                return validate_raid();                
             } else if (currentIndex == 1){
                 save_pvg_status();
                 return validate_lvm();
@@ -70,7 +70,10 @@ $(function (){
         {
             $(".validate-error").tooltip("close");
             $("div .ui-tooltip").remove();
-            if (currentIndex == 1){
+            if (currentIndex == 0){
+                $("#raiddiv-0").click();
+            } else if (currentIndex == 1){
+                $("#vg-0").click();
                 get_raid_configs();
                 get_pvg_labels();
                 raphael();
