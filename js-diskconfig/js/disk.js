@@ -2,7 +2,8 @@ count=1; /* the number of blocks (include Unused) */
 disksize=120; /* the disk capacity defined in the flavor TODO */
 totalwidth=600; /* the graphic length of the disk allocation bar can be adjusted */
 remainwidth=totalwidth; /* not yet allocated disk size of total capacity */
-initwidth=totalwidth*4/disksize; /* the minimum length of a partition allocated (size=4GB) */
+min_partition_size=4;/* the minimum size of a partition allocated (4GB) */
+initwidth=totalwidth*min_partition_size/disksize; /* the minimum length of a partition allocated (size=4GB) */
 minwidth=initwidth; /* except for the Unused one */
 minpartition=1; /* at least allocate one partition */
 maxpartition=10; /* at most equals totalwidth/minwidth; TODO */
@@ -296,22 +297,27 @@ $.fn.addEffect = function() {
 };
 
 function addtag(element){
-     var index = $(element).attr("id").split("-")[1]
-     var replaceWith = $('<input type="text" size="50" id="temp-'+index+'" style="display:inline;"/>');
-     $(element).hide();
-     $(element).after(replaceWith);
-     if ($(element).text() != "click to edit"){
-         replaceWith.val($(element).text());
-     }
-     replaceWith.focus();
+    var index = $(element).attr("id").split("-")[1]
+    var replaceWith = $('<input type="text" size="50" id="temp-'+index+'" style="display:inline;"/>');
+    $(element).hide();
+    $(element).after(replaceWith);
+    replaceWith.val($(element).text());
+    replaceWith.focus();
 
-     replaceWith.blur(function() {
-       if (replaceWith.val() != "") {
+    replaceWith.blur(function() {
+        if (replaceWith.val() != "") {
            $(element).text(replaceWith.val());
-       }
-       replaceWith.remove();
-       $(element).show();
-     });
+           replaceWith.remove();
+           $(element).show();
+        } else{
+            replaceWith.remove();
+            $(element).show();
+            show_validation($(element), "should not be empty!");
+            setTimeout(function() {
+                   $(element).tooltip("close");
+                  }, 2000);
+                }
+    });
  };   
 
 $(function(){

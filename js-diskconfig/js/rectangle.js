@@ -14,7 +14,7 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
                 ms = 500,
                 bcolor = Raphael.rgb(200-cdelta*cindex, 200-cdelta*cindex, 200-cdelta*cindex);            
             var p = paper.rect(cx+prewidth, cy, width, height, 0).attr({fill: bcolor, stroke: stroke, "stroke-width": 3});;
-            var txt = paper.text(cx + prewidth+width/2, cy + height*1.5 , labels[j]+": "+sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": "20" });
+            var txt = paper.text(cx + prewidth+width/2, cy + height*1.5 , sizes[j]+" GB").attr({fill: bcolor, stroke: "none", opacity: 1, "font-size": "20" });
             var tag = paper.text(cx + prewidth+width/2, cy + height/2 , labels[j]).attr({fill:"#fff",stroke: "none", opacity: 1, "font-size": 20});
 
            prewidth = prewidth + width;

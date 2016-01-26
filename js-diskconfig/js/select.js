@@ -25,13 +25,8 @@ function get_selection(){
 function add_vol(){
     $("#delete-vol-btn").button("option", "disabled", false);
     current_vol_index = vol_index[current_vg_index];
-    $("#vg-table-"+current_vg_index).append('<tr class="volrow-'+current_vol_index+'"><td>'+(current_vol_index+1)+'</td><td><p type="text" id="vollabel-'+current_vol_index+'" class="inline" onclick="addtag(this)" title="click to edit cannot be same with Physical Volume Partition Label">VG'+(current_vg_index+1)+'-LVM'+(current_vol_index+1)+'</p></td><td><input type="number" name="size" value="'+minsize+'" min="'+minsize+'" title="size of volume (>'+minsize+'G)"/></td></tr>');
+    $("#vg-table-"+current_vg_index).append('<tr class="volrow-'+current_vol_index+'"><td>'+(parseInt(current_vol_index)+1)+'</td><td><p type="text" id="vollabel-'+current_vol_index+'" class="inline" onclick="addtag(this)" title="click to edit cannot be same with Physical Volume Partition Label">VG'+(current_vg_index+1)+'-LVM'+(current_vol_index+1)+'</p></td><td><input type="number" name="size" value="'+minsize+'" min="'+minsize+'" /></td></tr>');
     vol_index[current_vg_index] = current_vol_index+1;
-    $("input[type=number]").change(function(){
-        if ($(this).val() ){//TODO
-        }
-        
-    });
 }
 
 function delete_vol(){
@@ -62,9 +57,9 @@ function add_vg(){
     $("#select-"+index).selectable({
         selected: function( event, ui){    
             var eleid = ui.selected.id;              
-            var vg_index = eleid.split("-")[1];
+            var vg_index = parseInt(eleid.split("-")[1]);
             $("#vg-"+vg_index).click();
-            var selected_index = eleid.split("-")[3];
+            var selected_index = parseInt(eleid.split("-")[3]);
             if (selected[selected_index] == 0){
                 selected[selected_index] = 1;
                 $(".option-"+selected_index).each(function(){
@@ -81,7 +76,7 @@ function add_vg(){
             //}
         },
         unselected: function( event, ui){                
-            var selected_index = ui.unselected.id.split("-")[3];
+            var selected_index = parseInt(ui.unselected.id.split("-")[3]);
             selected[selected_index] = 0;
             $(".option-"+selected_index).removeClass("block");
         },
@@ -99,11 +94,11 @@ function add_vg(){
     $("#vg-"+index).addClass("highlight-div");
     $("#vg-"+index).on("click",function(){
         var vgid = $(this).attr("id");
-        current_vg_index = vgid.split("-")[1];
-        current_vol_index = vol_index[current_vg_index]-1;
+        current_vg_index = parseInt(vgid.split("-")[1]);
+        current_vol_index = parseInt(vol_index[current_vg_index]-1);
         $(".hover-div").removeClass("highlight-div");
         $(this).addClass("highlight-div");
-        if (vol_index[current_vg_index] <= 1){
+        if (vol_index[current_vg_index] < 1){
             $("#delete-vol-btn").button("option", "disabled", true);
         } else{
             $("#delete-vol-btn").button("option", "disabled", false);
@@ -129,7 +124,7 @@ function delete_vg(){
     index = index - 1;
     $("#select-"+index+" .ui-selected").each(function(){           
         var option_id = $(this).attr("id");
-        var option_index = option_id.split("-")[3];
+        var option_index = parseInt(option_id.split("-")[3]);
         selected[option_index] = 0;
         $(".option-"+option_index).removeClass("block");
     });
@@ -226,9 +221,10 @@ function show_fs_table(){
         prevalue = mp_oldvalues[$(this).attr("id")];
         mp_oldvalues[$(this).attr("id")] = $(this).val();
         $('option[value="'+ prevalue+'"]').removeAttr("disabled");
-        $('option[value="'+ $(this).val()+'"]').attr("disabled", "disabled");
-        $(this).find("option:selected").removeAttr("disabled");
-        
+        if ($(this).val() != ""){
+            $('option[value="'+ $(this).val()+'"]').attr("disabled", "disabled");
+            $(this).find("option:selected").removeAttr("disabled");
+        }
     });
     /* set the option chosen already */     
     $("#filesystem-table").find("tr").each(function(){
