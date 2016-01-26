@@ -1,9 +1,14 @@
+/* This file controls the step switching logical, including validation and status save/load
+ *
+ */
+
+/* generate the final json */
 function generate(){
     var diskconfig = {"raid_arrays":raid_arrays, "lvm_volume_groups":lvm_groups,"filesystems":filesystems};
     $("#json-field").html(JSON.stringify(diskconfig,null,2));
    }
 
-
+/* load LVM tab */
 function refresh_lvm(){
     $("#pvg-label-div").children().each(function(){
         var selectnode = $(this).find(".selectable");
@@ -32,6 +37,7 @@ function refresh_lvm(){
     }
 }
 
+/* save status of filesystem tab before leaving */
 function save_fs_status(){
     fsstatus = {};    
     $("#filesystem-table").find("tr").each(function(){
@@ -42,21 +48,25 @@ function save_fs_status(){
 	});
 }
 
+/* main function of step switching control */
 $(function (){    
     $("#wizard").steps({
         headerTag: "h2",
         bodyTag: "section",
         stepsOrientation: "vertical",
         transitionEffect: "fade",
+        /* Right before step is to switch */
         onStepChanging:function (event, currentIndex, nextIndex){
             $(".wizard.vertical > .content").css("overflow","auto");
             if (currentIndex == 0  ){
                 /* validate RAID */
                 return validate_raid();                
             } else if (currentIndex == 1){
+                /* save pvg selection status and validate LVM */
                 save_pvg_status();
                 return validate_lvm();
             } else if (currentIndex == 2){
+                /* save fs/mountpoint selection status and validate */
                 save_fs_status();
                 if (currentIndex < nextIndex){
                     return validate_fs();
@@ -66,24 +76,39 @@ $(function (){
                 return true;
             }
         },
+        /* After step is switched */
         onStepChanged: function (event, currentIndex, priorIndex)
         {
             $(".validate-error").tooltip("close");
             $("div .ui-tooltip").remove();
             if (currentIndex == 0){
+                /* initially focus on the first RAID if exists */
                 $("#raiddiv-0").click();
             } else if (currentIndex == 1){
+                /* initially focus on the first VG if exists
+                 * 1. load RAID config
+                 * 2. get physical volume labels for LVMs to choose from 
+                 * 3. draw the graph of Partitions
+                 * 4. load previous LVMs input status
+                 */
                 $("#vg-0").click();
                 get_raid_configs();
                 get_pvg_labels();
                 raphael();
                 refresh_lvm();
             } else if(currentIndex == 2){
+                /* 1. load LVM configs
+                 * 2. get volumes for mount
+                 * 3. intially show/validate the table for file system config
+                 */
                 get_lvm_configs();
                 get_fs_labels();
                 show_fs_table();
                 validate_fs_table();
             } else if (currentIndex == 3){
+                /* 1. load fs/mountpoint config 
+                 * 2. generate the final json string
+                 */
                 get_fs_configs();
                 generate();
             }

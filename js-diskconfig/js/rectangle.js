@@ -1,3 +1,10 @@
+/* Draw the graph of created partitions of RAID.
+ * 1. cx, cy: the start point of drawing shapes, left-top as source point
+ * 2. need values, labels, sizes as input. values for width of shapes, labels for the description, sizes for the size of partition
+ * 3. when width of the shape is too narrow for the label, rotate the label for 90 degree and show it vertically.
+ */
+
+
 Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
     var paper = this,
         chart = this.set();
@@ -21,7 +28,8 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
                 tag.rotate(90);
             }
            prewidth = prewidth + width;
-            
+           
+           /* add the animation of mouse hover effects */ 
            p.mouseover(function () {
                 p.stop().animate({transform: "s1 1.1 " + cx + " " + cy}, ms, "elastic");
                 if ( width < 50 ){
@@ -52,6 +60,11 @@ Raphael.fn.rectChart = function (cx, cy, values, labels, sizes, stroke) {
     return chart;
 };
 
+/* Entry point of the graph draw function.
+ * 1. need global variable disk_array as input
+ * 2. disk_array holds the info of {label, size} of every created partition block, as well as the "Unused" block
+ * 3. need to empty the div "holder" every time it is called. 
+ */
 function raphael() {
     var values = [];
     var sizes = [];

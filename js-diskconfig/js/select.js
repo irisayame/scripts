@@ -1,3 +1,13 @@
+/* This file mainly contains the functions and variables for the LVM & File System config tabs.
+ * 1. creation/deletion of Volume Groups;
+ * 2. creation/deletion of logical volumes;
+ * 3. selection of the Physical Partition for LVM;
+ * 4. A graphic display of RAID creation status;
+ * 5. selection of file system / mount point for Physical/Logical Volumes
+ */
+
+
+
 function get_pvg_labels(){
     pvglabels = [];
     pvgsizes = [];
@@ -246,19 +256,19 @@ function show_fs_table(){
 }
 
 $(function() {
-    index = 0; // vg index
-    pvglabels = [];
-    pvgsizes = [];
-    pvgstatus = [];
-    fsstatus = {};
-    maxpvg = 5;
-    minsize = 4;
-    current_vg_index = 0;
-    current_vol_index = 0;
-    vol_index=[];
-    fs_types=["ext2", "ext3", "ext4", "xfs", "btrfs"];
-    mps=["/root", "/home", "/swp", "/mnt", "/var"];
-    mp_oldvalues = {};
+    index = 0; /* index of volume group (vg) */
+    pvglabels = []; /* the labels of raid partitions which not for lvm */
+    pvgsizes = []; /* the sizes of raid partitions which not for lvm, position corresponding to pvglabels */
+    pvgstatus = []; /* hold the status of pvg selection, for the step switch operation */
+    fsstatus = {};  /* hold the status of filesystem selection, for the step switch operation */
+    maxpvg = 5;  /* the maximum number of volume groups TODO */
+    minsize = 4;  /* the minimum size of logical volumes TODO */
+    current_vg_index = 0;  /* the index of currently active volume group */
+    current_vol_index = 0;  /* the index of current active volume in the table, always the last row */
+    vol_index = [];  /* hold the index of volumes in every volume group, used for add/delete logical volume */
+    fs_types=["ext2", "ext3", "ext4", "xfs", "btrfs"];  /* all available options for file system types TODO */
+    mps=["/root", "/home", "/swp", "/mnt", "/var"];  /* all available options for mount point TODO */
+    mp_oldvalues = {}; /* hold the old values of mount point, used for disable/enable options of mount point */
 
     $( "button" ).button();
     $("#delete-vg-btn").button("option","disabled",true);

@@ -1,3 +1,10 @@
+/* This file mainly contains the functions and variables for the RAID config tabs.
+ * 1. RAID creation/deletion;
+ * 2. Partition creation/deletion;
+ * 3. Resizable block bar & block table;
+ */
+
+/* Handling the creation of one RAID */
 function add_raid(){
     if ( raid_index >= max_raids-1){
         $("#add-raid-btn").button("option", "disabled", true);
@@ -19,7 +26,7 @@ function add_raid(){
     partition_index.push(0);
     $("#raiddiv-"+current_index).on("click",function(){
         var raid_id = $(this).attr("id");
-        current_index = raid_id.split("-")[1];
+        current_index = parseInt(raid_id.split("-")[1]);
         current_part_index = partition_index[current_index]-1;
         $(".hover-div").removeClass("highlight-div");
         $(this).addClass("highlight-div");
@@ -38,6 +45,7 @@ function add_raid(){
     raid_index = raid_index + 1;
 }
 
+/* Handling deletion of one RAID */
 function delete_raid(){
     if (raid_index <= 1){
         $("#delete-raid-btn").button("option", "disabled", true);
@@ -53,15 +61,14 @@ function delete_raid(){
     $("#raiddiv-"+(raid_index - 1)).click();
 }
 
+/* Entry point of add partition
+ * 1. add row to the selected RAID Table;
+ * 2. add block to the resizable block bar(always add as the left sibling of the Unused block)
+ * 3. add column to the overall block table;
+ * 4. refresh the components of the tables and divs.
 
+*/
 function add_partition(){
-    /*
-        1. add row to the selected RAID Table;
-        2. add block to the resizable block bar(always add as the left sibling of the Unused block)
-        3. add column to the overall block table;
-        4. refresh the components of the tables and divs.
-
-    */
     $("#delete-part-btn").button("option", "disabled", false);  
     current_part_index = partition_index[current_index];
     $("#parttable-"+current_index).append('<tr class="partrow-'+current_part_index+'"><td>'+(current_part_index+1)+'</td><td><p id="label-p-'+current_part_index+'" class="label-'+current_part_index+' inline" onclick="addtag(this)" title="Click to edit">R'+(parseInt(current_index)+1)+'P'+(current_part_index+1)+'</p></td><td class="size-'+current_part_index+'"></td><td class="lvmlabel-'+current_part_index+'"><input type="checkbox" name="lvmlabel" checked></td></tr>');
@@ -70,13 +77,13 @@ function add_partition(){
     add_part_resizable();
 }
 
+/* Entry point of delete partition
+ * 1. delete last row of the selected RAID table;
+ * 2. delete the corresponding div of the overall block bar;
+ * 3. delete the column of the overall block table;
+ * 4. update the components of the tables and divs.
+ */
 function delete_partition(){
-    /*
-        1. delete last row of the selected RAID table;
-        2. delete the corresponding div of the overall block bar;
-        3. delete the column of the overall block table;
-        4. update the components of the tables and divs.
-    */
     if (partition_index[current_index] <= 1){
         $("#delete-part-btn").button("option", "disabled", true);
     }
@@ -91,11 +98,14 @@ function delete_partition(){
     partition_index[current_index] = partition_index[current_index] - 1;
 }
 
-/* change the block width to disk size */
+/* Calculate the disk size from the block width */
 function calculate(width){
     return Math.round(width*disksize/totalwidth);
 }
 
+/* Controller of resizable block bar
+ * 1. set the max/min width of every div;
+ */
 function loadresize(){$(function() {
   var width = totalwidth/count;
   $(".resizable1").resizable({
@@ -150,7 +160,12 @@ function loadresize(){$(function() {
   });
 });};
 
-
+/* Handling the block bar every time a partition is created 
+ * 1. update add-partition-button status according to whether it meets the max number of partitions can be created (currently tricky);
+ * 2. add new block to the bar, adjust its properties, and pay attention to the Ununsed block (width)
+ * 3. refresh the block table, pay attention to the Unused block (size)
+ * 4. update the block_index array, to make sure the map of index(Raid,partition) and index(block) correct
+ */
 function add_part_resizable(){
   remainwidth = $("#div-1").width();
   bccolor = bccolor-111111;
@@ -165,7 +180,6 @@ function add_part_resizable(){
   if (count > minpartition){
       $("#delete-part-btn").button("option","disabled",false);
   }
-
 
   /* add new block and initial it. */
   var newnode = $('<div id="div-'+count+'" class="resizable resizable1 ui-resizable" style="top 0px; left:0px;height:50px;"><div class="ui-resizable-handle ui-resizable-e" style="z-index:1000;"></div></div>');
@@ -192,6 +206,12 @@ function add_part_resizable(){
   
 }
 
+/* handling the block bar when a partition is deleted
+ * 1. update the status of delete-partition-button;
+ * 2. update the block bar by removing deleted one, and pay attention to the Ununsed block (width)
+ * 3. refresh the block table, pay attention to the Unused block;
+ * 4. update the block_index array
+ */
 function delete_part_resizable(){
   bccolor = bccolor+111111;
   if (count == minpartition+1){
@@ -220,16 +240,27 @@ function delete_part_resizable(){
   block_index.splice(blockindex, 1);
  
 }
+
+/* refresh the block table every time a partition is added 
+ * 1. update the block table to contain the info of newly created partition: No., size, Raid-index, Partition-index
+ * 2. add the title of the newly created block div in the block bar
+ * 3. update the size of Unused block (minus the newly created one)
+ */
 function refresh_add_block_table(width){
   $('<td id="number-col-'+count+'">'+(count-1)+'</td>').insertBefore("#number-col-1");
   $('<td id="size-col-'+count+'">'+calculate(width)+'</td>').insertBefore("#size-col-1");
-  $('<td id="raidindex-col-'+count+'">RAID-'+(parseInt(current_index)+1)+'</td>').insertBefore("#raidindex-col-1");
+  $('<td id="raidindex-col-'+count+'">RAID-'+(current_index+1)+'</td>').insertBefore("#raidindex-col-1");
   $('<td id="partindex-col-'+count+'">Partition-'+(current_part_index+1)+'</td>').insertBefore("#partindex-col-1");
-  $('#div-'+count).attr("title",$("#parttable-"+current_index+" .label-"+current_part_index).html() );
+
   remainwidth = $("#div-1").width(); 
   $("#size-col-1").html(calculate(remainwidth));
+
+  //$('#div-'+count).attr("title",$("#parttable-"+current_index+" .label-"+current_part_index).html() );
+  $('#div-'+count).attr("title", "RAID"+(current_index+1)+", Partition"+(current_part_index+1) );
 }
 
+/* refresh the block table every time a partition is deleted.
+ */
 function refresh_delete_block_table(blockindex){
   $("#number-col-"+blockindex).remove();
   $("#size-col-"+blockindex).remove();
@@ -247,6 +278,7 @@ function refresh_delete_block_table(blockindex){
   }
 }
 
+/* summary the configs of RAID, will be called when switching out from RAID config tab */
 function get_raid_configs(){
     raid_arrays = [];
     disk_arrays = {};
@@ -263,6 +295,8 @@ function get_raid_configs(){
     });
 }
 
+
+/* effects of the tag edit, use an input box instead of <p> when click in the cell  */
 $.fn.addEffect = function() {
    $(this).hover(function() {
       $(this).addClass('hover');
@@ -304,7 +338,7 @@ $(function(){
     remainwidth=totalwidth; /* not yet allocated disk size of total capacity */
     min_partition_size=4;/* the minimum size of a partition allocated (4GB) */
     minwidth=totalwidth*min_partition_size/disksize; /* except for the Unused one */
-    initwidth=10*minwidth; /* the minimum length of a partition allocated (size=4GB) */
+    initwidth=10*minwidth; /* the initial length of a partition newly allocated (size=4GB) */
     minpartition=1; /* at least allocate one partition */
     maxpartition=10; /* at most equals totalwidth/minwidth; TODO */
     bccolor=999999; /* initial graphic color of paritions */
@@ -319,9 +353,14 @@ $(function(){
     raid_index = 0; /* next raid index to create, equals to the numbers of current allocated raids */
     current_part_index = 0; /* current index of partitions of the current raid */
     partition_index = []; /* hold the next partition index to create of all raids */
-    block_index = [""];/*  */
+
     max_raids = 1; /* the max number of raids could be created, should be adjust later  TODO */
     selected = []; /* mark the raid physical volumes have been selected  */
+
+    /* !! hold the map of RAID-Parition index and block index of partitions created.
+     * First element for Unused block, with empty string for no RAID-Parition index.
+     */
+    block_index = [""];
 
     $("#disk-size").html(disksize);
     $("#outer-div").css("width", totalwidth);
