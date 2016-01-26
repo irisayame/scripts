@@ -28,7 +28,7 @@ function add_vol(){
     $("#vg-table-"+current_vg_index).append('<tr class="volrow-'+current_vol_index+'"><td>'+(current_vol_index+1)+'</td><td><p type="text" id="vollabel-'+current_vol_index+'" class="inline" onclick="addtag(this)" title="click to edit cannot be same with Physical Volume Partition Label">VG'+(current_vg_index+1)+'-LVM'+(current_vol_index+1)+'</p></td><td><input type="number" name="size" value="'+minsize+'" min="'+minsize+'" title="size of volume (>'+minsize+'G)"/></td></tr>');
     vol_index[current_vg_index] = current_vol_index+1;
     $("input[type=number]").change(function(){
-        if ($(this).val() ){
+        if ($(this).val() ){//TODO
         }
         
     });
@@ -84,7 +84,6 @@ function add_vg(){
             var selected_index = ui.unselected.id.split("-")[3];
             selected[selected_index] = 0;
             $(".option-"+selected_index).removeClass("block");
-            console.log("unselected: "+ui.unselected.id);
         },
         cancel:".block",
     });

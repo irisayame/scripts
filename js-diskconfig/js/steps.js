@@ -55,7 +55,7 @@ $(function (){
                 return true;                
             } else if (currentIndex == 1){
                 save_pvg_status();
-                return true;
+                return validate_lvm();
             } else if (currentIndex == 2){
                 save_fs_status();
                 if (currentIndex < nextIndex){
@@ -75,11 +75,11 @@ $(function (){
                 get_pvg_labels();
                 raphael();
                 refresh_lvm();
-                $("#add-vg-btn").click();
             } else if(currentIndex == 2){
                 get_lvm_configs();
                 get_fs_labels();
                 show_fs_table();
+                validate_fs_table();
             } else if (currentIndex == 3){
                 get_fs_configs();
                 generate();

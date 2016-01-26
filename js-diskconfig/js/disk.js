@@ -1,5 +1,5 @@
 count=1; /* the number of blocks (include Unused) */
-disksize=120; /* the disk capacity defined in the flavor */
+disksize=120; /* the disk capacity defined in the flavor TODO */
 totalwidth=600; /* the graphic length of the disk allocation bar can be adjusted */
 remainwidth=totalwidth; /* not yet allocated disk size of total capacity */
 initwidth=totalwidth*4/disksize; /* the minimum length of a partition allocated (size=4GB) */
@@ -19,7 +19,7 @@ raid_index = 0; /* next raid index to create, equals to the numbers of current a
 current_part_index = 0; /* current index of partitions of the current raid */
 partition_index = []; /* hold the next partition index to create of all raids */
 block_index = [""];/*  */
-max_raids = 4; /* the max number of raids could be created, should be adjust later  TODO */
+max_raids = 1; /* the max number of raids could be created, should be adjust later  TODO */
 selected = []; /* mark the raid physical volumes have been selected  */
 
 function add_raid(){
@@ -64,8 +64,8 @@ function add_raid(){
 
 function delete_raid(){
     if (raid_index <= 1){
-        $("#delete-raid-btn").button("option", "disabled",true);
-        $("#add-part-btn").button("option", "disabled",true);
+        $("#delete-raid-btn").button("option", "disabled", true);
+        $("#add-part-btn").button("option", "disabled", true);
     }
     while (current_part_index >= 0){  
         $("#delete-part-btn").click();
@@ -86,7 +86,7 @@ function add_partition(){
         4. refresh the components of the tables and divs.
 
     */
-    $("#delete-part-btn").button("option", "disabled", false);
+    $("#delete-part-btn").button("option", "disabled", false);  
     current_part_index = partition_index[current_index];
     $("#parttable-"+current_index).append('<tr class="partrow-'+current_part_index+'"><td>'+(current_part_index+1)+'</td><td><p id="label-p-'+current_part_index+'" class="label-'+current_part_index+' inline" onclick="addtag(this)" title="Click to edit">R'+(parseInt(current_index)+1)+'P'+(current_part_index+1)+'</p></td><td class="size-'+current_part_index+'"></td><td class="lvmlabel-'+current_part_index+'"><input type="checkbox" name="lvmlabel" checked></td></tr>');
     partition_index[current_index] = current_part_index+1;
@@ -115,8 +115,9 @@ function delete_partition(){
     partition_index[current_index] = partition_index[current_index] - 1;
 }
 
+/* change the block width to disk size */
 function calculate(width){
-    return width*disksize/totalwidth;
+    return Math.round(width*disksize/totalwidth);
 }
 
 function loadresize(){$(function() {
@@ -134,6 +135,13 @@ function loadresize(){$(function() {
 
       var next = ui.element.next();
       var divTwoWidth = totalWidth - ui.element.outerWidth();
+
+      if (ui.element.next().attr("id") == "div-1" && divTwoWidth >= minwidth){
+          $("#add-part-btn").button("option", "disabled", false);
+      } else if (ui.element.next().attr("id") == "div-1" && divTwoWidth < minwidth) {
+          $("#add-part-btn").button("option", "disabled", true);
+      }
+
       next.width(divTwoWidth);
       $("#"+size_td_id).html(calculate(ui.element.outerWidth()));
       $("#"+next_size_td_id).html(calculate(divTwoWidth));
@@ -152,8 +160,16 @@ function loadresize(){$(function() {
     start: function(e, ui) {
       var next = ui.element.next();
       totalWidth = ui.element.outerWidth()+next.outerWidth();
-      $(this).resizable("option", "maxWidth", totalWidth-minwidth);
-      $(this).resizable("option", "minWidth", minwidth);
+      if (next.attr("id") == "div-1"){
+        $(this).resizable("option", "maxWidth", totalWidth);
+      } else {
+        $(this).resizable("option", "maxWidth", totalWidth-minwidth);
+      }
+      if ($(this).attr("id") == "div-1"){
+        $(this).resizable("option", "minWidth", 0);
+      } else{
+        $(this).resizable("option", "minWidth", minwidth);
+      }
     },
   });
 });};
@@ -173,6 +189,8 @@ function add_part_resizable(){
   if (count > minpartition){
       $("#delete-part-btn").button("option","disabled",false);
   }
+
+
   /* add new block and initial it. */
   var newnode = $('<div id="div-'+count+'" class="resizable resizable1 ui-resizable" style="top 0px; left:0px;height:50px;"><div class="ui-resizable-handle ui-resizable-e" style="z-index:1000;"></div></div>');
   newnode.insertBefore($("#div-1"));
@@ -182,6 +200,9 @@ function add_part_resizable(){
   /* adjust the size of block on the right edge */
   remainwidth = remainwidth-width;
   $("#div-1").css("width",remainwidth);
+  if(remainwidth <= minwidth){
+      $("#add-part-btn").button("option", "disabled",true);
+  }
 
   /* enable the resizable */
   $(window).load(loadresize());
@@ -228,9 +249,9 @@ function refresh_add_block_table(width){
   $('<td id="size-col-'+count+'">'+calculate(width)+'</td>').insertBefore("#size-col-1");
   $('<td id="raidindex-col-'+count+'">RAID-'+(parseInt(current_index)+1)+'</td>').insertBefore("#raidindex-col-1");
   $('<td id="partindex-col-'+count+'">Partition-'+(current_part_index+1)+'</td>').insertBefore("#partindex-col-1");
-  console.log("div-"+count+" title:"+" == label of ("+current_index+", "+current_part_index+")");
-  $('#div-'+count).attr("title",$("#parttable-"+current_index+" .label-"+current_part_index).html() )
-  //$("#number-col-1").html(count);
+  $('#div-'+count).attr("title",$("#parttable-"+current_index+" .label-"+current_part_index).html() );
+  remainwidth = $("#div-1").width(); 
+  $("#size-col-1").html(calculate(remainwidth));
 }
 
 function refresh_delete_block_table(blockindex){
@@ -238,7 +259,6 @@ function refresh_delete_block_table(blockindex){
   $("#size-col-"+blockindex).remove();
   $("#raidindex-col-"+blockindex).remove();
   $("#partindex-col-"+blockindex).remove();
-  //$("#number-col-1").html(count);
    
   for (var i = blockindex; i < count+2; i++){
     $("#number-col-"+i).html($("#number-col-"+i).html()-1);
@@ -276,7 +296,6 @@ $.fn.addEffect = function() {
 };
 
 function addtag(element){
-     console.log($(element).attr("id"));
      var index = $(element).attr("id").split("-")[1]
      var replaceWith = $('<input type="text" size="50" id="temp-'+index+'" style="display:inline;"/>');
      $(element).hide();
