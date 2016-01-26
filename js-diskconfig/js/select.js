@@ -156,7 +156,7 @@ function get_lvm_configs(){
             /* loop over volume in every VG table */
             var lvm = {"size":"auto","label":null};
             lvm["label"] =  $("#vg-table-"+i+" .volrow-"+j+" p").html();
-            lvm["size"] = $("#vg-table-"+i+" .volrow-"+j+" input[name=size]").val();
+            lvm["size"] = $("#vg-table-"+i+" .volrow-"+j+" input[name=size]").val()+"G";
             lvg["logical_volumes"].push(lvm);
         }        
         lvm_groups.push(lvg);

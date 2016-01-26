@@ -286,7 +286,7 @@ function get_raid_configs(){
         var oneraid = {"primary_storage":$(this).find("input[type=radio]").is(":checked"), "partitions":[]};
         var raidindex = $(this).attr("id").split("-")[1];
         $(this).find("#parttable-"+raidindex+" tr").each(function(){
-            var onepartition = {"size":$(this).find(":nth-child(3)").html(), "partition_label":$(this).find("p").html(), "lvm":$(this).find("input[name=lvmlabel]").is(":checked")};
+            var onepartition = {"size":$(this).find(":nth-child(3)").html()+"G", "partition_label":$(this).find("p").html(), "lvm":$(this).find("input[name=lvmlabel]").is(":checked")};
             oneraid["partitions"].push(onepartition);
             disk_arrays[onepartition["partition_label"]] = onepartition["size"];
         });     
